@@ -39,6 +39,9 @@ __host__ static inline void create_tensor_map(
         std::is_same_v<dtype, bf16>  ? CU_TENSOR_MAP_DATA_TYPE_BFLOAT16 :
         std::is_same_v<dtype, half>  ? CU_TENSOR_MAP_DATA_TYPE_FLOAT16 :
         std::is_same_v<dtype, float> ? CU_TENSOR_MAP_DATA_TYPE_FLOAT32 :
+        std::is_same_v<dtype, int8>  ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
+        std::is_same_v<dtype, uint8> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
+        std::is_same_v<dtype, int>   ? CU_TENSOR_MAP_DATA_TYPE_INT32 :
         std::is_same_v<dtype, fp8e4m3> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
         std::is_same_v<dtype, fp8e5m2> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
 #ifdef KITTENS_BLACKWELL
@@ -241,6 +244,9 @@ __host__ static inline void create_tensor_map(CUtensorMap *tma_map, const typena
         std::is_same_v<dtype, bf16>  ? CU_TENSOR_MAP_DATA_TYPE_BFLOAT16 :
         std::is_same_v<dtype, half>  ? CU_TENSOR_MAP_DATA_TYPE_FLOAT16 :
         std::is_same_v<dtype, float> ? CU_TENSOR_MAP_DATA_TYPE_FLOAT32 :
+        std::is_same_v<dtype, int8>  ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
+        std::is_same_v<dtype, uint8> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
+        std::is_same_v<dtype, int>   ? CU_TENSOR_MAP_DATA_TYPE_INT32 :
         std::is_same_v<dtype, fp8e4m3> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
         std::is_same_v<dtype, fp8e5m2> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
 #ifdef KITTENS_BLACKWELL
