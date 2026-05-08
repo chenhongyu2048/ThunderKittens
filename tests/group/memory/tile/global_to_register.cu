@@ -5,9 +5,15 @@
 template<typename T>
 struct group_load_store {
     using dtype = T;
-    template<int H, int W, int NW, kittens::ducks::rt_layout::all L> using valid = std::bool_constant<H%NW==0 && W*H<=64>; // this is group-level
+    template<int H, int W, int NW, kittens::ducks::rt_layout::all L> using valid = std::bool_constant<
+        ( H%NW==0 && W*H<=64 ) && ( sizeof(T) != 1 || W%2 == 0 )
+    >; // this is group-level
     static inline const std::string test_identifier = std::is_same_v<T, kittens::bf16> ? "group_reg_loadstore_gmem=bf16" :
                                                       std::is_same_v<T, kittens::half> ? "group_reg_loadstore_gmem=half" :
+#if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+                                                      std::is_same_v<T, kittens::fp8e4m3> ? "group_reg_loadstore_gmem=fp8e4m3" :
+                                                      std::is_same_v<T, kittens::fp8e5m2> ? "group_reg_loadstore_gmem=fp8e5m2" :
+#endif
                                                       std::is_same_v<T, bool> ? "group_reg_loadstore_gmem=bool" :
                                                       std::is_same_v<T, char> ? "group_reg_loadstore_gmem=char" :
                                                       std::is_same_v<T, unsigned char> ? "group_reg_loadstore_gmem=unsigned_char" :
@@ -73,6 +79,16 @@ void group::memory::tile::global_to_register::tests(test_data &results) {
     sweep_size_2d<group_load_store<kittens::half>, SIZE, SIZE, 4, kittens::ducks::rt_layout::col>::run(results);
     sweep_size_2d<group_load_store<kittens::half>, SIZE, SIZE, 12, kittens::ducks::rt_layout::row>::run(results);
     sweep_size_2d<group_load_store<kittens::half>, SIZE, SIZE, 12, kittens::ducks::rt_layout::col>::run(results);
+#if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+    sweep_size_2d<group_load_store<kittens::fp8e4m3>, SIZE, SIZE, 1, kittens::ducks::rt_layout::row>::run(results);
+    sweep_size_2d<group_load_store<kittens::fp8e4m3>, SIZE, SIZE, 2, kittens::ducks::rt_layout::row>::run(results);
+    sweep_size_2d<group_load_store<kittens::fp8e4m3>, SIZE, SIZE, 4, kittens::ducks::rt_layout::row>::run(results);
+    sweep_size_2d<group_load_store<kittens::fp8e4m3>, SIZE, 4, 12, kittens::ducks::rt_layout::row>::run(results);
+    sweep_size_2d<group_load_store<kittens::fp8e5m2>, SIZE, SIZE, 1, kittens::ducks::rt_layout::row>::run(results);
+    sweep_size_2d<group_load_store<kittens::fp8e5m2>, SIZE, SIZE, 2, kittens::ducks::rt_layout::row>::run(results);
+    sweep_size_2d<group_load_store<kittens::fp8e5m2>, SIZE, SIZE, 4, kittens::ducks::rt_layout::row>::run(results);
+    sweep_size_2d<group_load_store<kittens::fp8e5m2>, SIZE, 4, 12, kittens::ducks::rt_layout::row>::run(results);
+#endif
     sweep_size_2d<group_load_store<bool>, SIZE, SIZE, 1, kittens::ducks::rt_layout::row>::run(results);
     sweep_size_2d<group_load_store<char>, SIZE, SIZE, 1, kittens::ducks::rt_layout::row>::run(results);
     sweep_size_2d<group_load_store<unsigned char>, SIZE, SIZE, 1, kittens::ducks::rt_layout::row>::run(results);
