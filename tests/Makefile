@@ -33,13 +33,13 @@ endif
 
 # Compiler flags based on GPU target
 ifeq ($(GPU_TARGET),A100)
-NVCCFLAGS+= -gencode arch=compute_80a,code=sm_80 -DKITTENS_AMPERE -lcuda -lcudart
+NVCCFLAGS+= -gencode arch=compute_80a,code=sm_80 -DKITTENS_SM80 -lcuda -lcudart
 else ifeq ($(GPU_TARGET),H100)
-NVCCFLAGS+= -gencode arch=compute_90a,code=sm_90a -DKITTENS_HOPPER -lcuda -lcudart
+NVCCFLAGS+= -gencode arch=compute_90a,code=sm_90a -DKITTENS_SM90 -lcuda -lcudart
 else ifeq ($(GPU_TARGET),B200)
-NVCCFLAGS+= -gencode arch=compute_100a,code=sm_100a -DKITTENS_BLACKWELL -lcuda -lcudart
+NVCCFLAGS+= -gencode arch=compute_100a,code=sm_100a -DKITTENS_SM100 -lcuda -lcudart
 else ifeq ($(GPU_TARGET),B300)
-NVCCFLAGS+= -gencode arch=compute_103a,code=sm_103a -DKITTENS_BLACKWELL -lcuda -lcudart
+NVCCFLAGS+= -gencode arch=compute_103a,code=sm_103a -DKITTENS_SM103 -lcuda -lcudart
 endif
 
 # Target binary name

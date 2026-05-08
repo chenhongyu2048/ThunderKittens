@@ -1,6 +1,6 @@
 #include "tensor_to_register.cuh"
 
-#if defined(TEST_GROUP_MEMORY_TILE_TENSOR_TO_REGISTER) && defined(KITTENS_BLACKWELL)
+#if defined(TEST_GROUP_MEMORY_TILE_TENSOR_TO_REGISTER) && defined(KITTENS_SM10X)
 
 template<typename T>
 struct group_tensor_reg_load_store {

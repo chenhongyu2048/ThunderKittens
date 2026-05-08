@@ -10,6 +10,6 @@
 #include "base_ops.cuh"
 #include "util.cuh"
 
-#if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
 #include "multimem.cuh"
 #endif

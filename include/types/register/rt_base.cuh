@@ -49,12 +49,12 @@ template<typename _T, ducks::rt_layout::all _layout> struct rt_base {
     using T2 = kittens::base_types::packing<_T>::packed_type;
     using dtype = T2; ///< Data type of the matrix elements
 
-#if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
     static_assert(
         std::is_same_v<dtype, half_2> || std::is_same_v<dtype, bf16_2> || std::is_same_v<dtype, float2> || 
         std::is_same_v<dtype, int8_4> || std::is_same_v<dtype, uint8_4> || std::is_same_v<dtype, int2> || 
         std::is_same_v<dtype, fp8e4m3_4> || std::is_same_v<dtype, fp8e5m2_4>
-#if defined(KITTENS_BLACKWELL)
+#if defined(KITTENS_SM10X)
         || std::is_same_v<dtype, fp8e8m0_4> || std::is_same_v<dtype, fp4e2m1_4>
 #endif
         ,
@@ -113,11 +113,11 @@ template<ducks::rt_layout::all L=ducks::rt_layout::row> using rt_base_hf = rt_ba
 template<ducks::rt_layout::all L=ducks::rt_layout::row> using rt_base_int8 = rt_base<int8, L>;
 template<ducks::rt_layout::all L=ducks::rt_layout::row> using rt_base_uint8 = rt_base<uint8, L>;
 template<ducks::rt_layout::all L=ducks::rt_layout::row> using rt_base_int = rt_base<int, L>;
-#if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
 template<ducks::rt_layout::all L=ducks::rt_layout::row> using rt_base_fp8e4m3 = rt_base<fp8e4m3, L>;
 template<ducks::rt_layout::all L=ducks::rt_layout::row> using rt_base_fp8e5m2 = rt_base<fp8e5m2, L>;
 #endif
-#ifdef KITTENS_BLACKWELL
+#ifdef KITTENS_SM10X
 template<ducks::rt_layout::all L=ducks::rt_layout::row> using rt_base_fp8e8m0 = rt_base<fp8e8m0, L>;
 template<ducks::rt_layout::all L=ducks::rt_layout::row> using rt_base_fp4e2m1_2 = rt_base<fp4e2m1_2, L>;
 #endif

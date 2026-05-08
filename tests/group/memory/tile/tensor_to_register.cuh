@@ -1,6 +1,6 @@
 #include "testing_flags.cuh"
 
-#if defined(TEST_GROUP_MEMORY_TILE_TENSOR_TO_REGISTER) && defined(KITTENS_BLACKWELL)
+#if defined(TEST_GROUP_MEMORY_TILE_TENSOR_TO_REGISTER) && defined(KITTENS_SM10X)
 
 #include "testing_commons.cuh"
 

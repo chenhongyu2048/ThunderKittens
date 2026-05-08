@@ -137,7 +137,7 @@ __device__ static inline void hmma16816(      half_2 &d0,       half_2 &d1,
     );
 }
 
-#if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
 /**
 * @brief Perform the HMMA.16816 operation for FP8 using fp8e4m3_2.
 *
@@ -325,7 +325,7 @@ __device__ static inline void mma_AB_base(rt_base<float, ducks::rt_layout::row> 
         c.data[2], c.data[3]
     );
 }
-#if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
 /**
  * @brief Base matrix multiply-accumulate operation for row layout.
  *
@@ -440,7 +440,7 @@ __device__ static inline void mma_ABt_base(rt_base<float, ducks::rt_layout::row>
         c.data[2], c.data[3]
     );
 }
-#if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
 /**
  * @brief Base dot product operation for row layout.
  *
@@ -549,7 +549,7 @@ __device__ static inline void mma_AtB_base(rt_base<float, ducks::rt_layout::row>
         c.data[2], c.data[3]
     );
 }
-#if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
 /**
  * @brief Base matrix multiply-accumulate operation for row layout with transposed A.
  *
@@ -637,7 +637,7 @@ __device__ static inline void mma_AtBt_base(rt_base<float, ducks::rt_layout::row
         c.data[2], c.data[3]
     );
 }
-#if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
 /**
  * @brief Base matrix multiply-accumulate operation for row layout with transposed A and B.
  *
@@ -691,7 +691,7 @@ __device__ static inline void mma_AB(D &d,
     static_assert(D::rows == A::rows && D::cols == B::cols); // Check D matches A, B
     static_assert(A::cols == B::rows); // Check reduction dim is same
     static_assert(D::rows == C::rows && D::cols == C::cols); // Check D matches C
-    #if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+    #if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
     static_assert(
         (std::is_same_v<typename D::T, float> && std::is_same_v<typename A::T, bf16> &&
             std::is_same_v<typename B::T, bf16> && std::is_same_v<typename C::T, float>) ||
@@ -755,7 +755,7 @@ __device__ static inline void mma_ABt(D &d,
     static_assert(D::rows == A::rows && D::cols == B::rows); // Check D matches A, B
     static_assert(A::cols == B::cols); // Check reduction dim is same
     static_assert(D::rows == C::rows && D::cols == C::cols); // Check D matches C
-    #if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+    #if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
     static_assert(
         (std::is_same_v<typename D::T, float> && std::is_same_v<typename A::T, bf16> &&
             std::is_same_v<typename B::T, bf16> && std::is_same_v<typename C::T, float>) ||
@@ -827,7 +827,7 @@ __device__ static inline void mma_AtB(D &d,
     static_assert(D::rows == A::cols && D::cols == B::cols); // Check D matches A, B
     static_assert(A::rows == B::rows); // Check reduction dim is same
     static_assert(D::rows == C::rows && D::cols == C::cols); // Check D matches C
-    #if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+    #if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
     static_assert(
         (std::is_same_v<typename D::T, float> && std::is_same_v<typename A::T, bf16> &&
             std::is_same_v<typename B::T, bf16> && std::is_same_v<typename C::T, float>) ||
@@ -891,7 +891,7 @@ __device__ static inline void mma_AtBt(D &d,
     static_assert(D::rows == A::cols && D::cols == B::rows); // Check D matches A, B
     static_assert(A::rows == B::cols); // Check reduction dim is same
     static_assert(D::rows == C::rows && D::cols == C::cols); // Check D matches C
-    #if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+    #if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
     static_assert(
         (std::is_same_v<typename D::T, float> && std::is_same_v<typename A::T, bf16> &&
             std::is_same_v<typename B::T, bf16> && std::is_same_v<typename C::T, float>) ||

@@ -7,7 +7,7 @@
 #   include common.mk
 
 # These should be set by the including Makefile
-GPU ?= NOT_SET # H100 | B200 | B300
+GPU ?= NOT_SET # A100 | H100 | B200 | B300
 SRC ?= NOT_SET # ex. my_kernel.cu
 OUT ?= NOT_SET # ex. _C$(shell python3 -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))")
 CMD ?= NOT_SET # ex. ./my_kernel, OMP_NUM_THREADS=1 torchrun --nproc_per_node=8 benchmark.py
@@ -85,13 +85,13 @@ endif
 
 # Architecture-specific flags
 ifeq ($(GPU),B300)
-NVCCFLAGS += -DKITTENS_BLACKWELL -gencode arch=compute_103a,code=sm_103a
+NVCCFLAGS += -DKITTENS_SM103 -gencode arch=compute_103a,code=sm_103a
 else ifeq ($(GPU),B200)
-NVCCFLAGS += -DKITTENS_BLACKWELL -gencode arch=compute_100a,code=sm_100a
+NVCCFLAGS += -DKITTENS_SM100 -gencode arch=compute_100a,code=sm_100a
 else ifeq ($(GPU),H100)
-NVCCFLAGS += -DKITTENS_HOPPER -gencode arch=compute_90a,code=sm_90a
+NVCCFLAGS += -DKITTENS_SM90 -gencode arch=compute_90a,code=sm_90a
 else ifeq ($(GPU),A100)
-NVCCFLAGS += -DKITTENS_AMPERE -gencode arch=compute_80,code=sm_80
+NVCCFLAGS += -DKITTENS_SM80 -gencode arch=compute_80,code=sm_80
 else
 $(error Unsupported GPU: $(GPU). Please set GPU to H100, B200, or B300.)
 endif

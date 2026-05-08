@@ -28,7 +28,7 @@ __host__ static inline void create_tensor_map(
 ) {
     using dtype = typename ST::dtype;
     static_assert(axis==0 || axis==1 || axis==2, "axis must be 0, 1, or 2");
-#ifdef KITTENS_BLACKWELL
+#ifdef KITTENS_SM10X
     static_assert(!(std::is_same_v<dtype, fp4e2m1_2> && axis != 2), "Axes 0 and 1 are not yet supported for FP4 type");
 #endif
 
@@ -44,7 +44,7 @@ __host__ static inline void create_tensor_map(
         std::is_same_v<dtype, int>   ? CU_TENSOR_MAP_DATA_TYPE_INT32 :
         std::is_same_v<dtype, fp8e4m3> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
         std::is_same_v<dtype, fp8e5m2> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
-#ifdef KITTENS_BLACKWELL
+#ifdef KITTENS_SM10X
         std::is_same_v<dtype, fp8e8m0> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
         std::is_same_v<dtype, fp4e2m1_2> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
 #endif
@@ -249,7 +249,7 @@ __host__ static inline void create_tensor_map(CUtensorMap *tma_map, const typena
         std::is_same_v<dtype, int>   ? CU_TENSOR_MAP_DATA_TYPE_INT32 :
         std::is_same_v<dtype, fp8e4m3> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
         std::is_same_v<dtype, fp8e5m2> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
-#ifdef KITTENS_BLACKWELL
+#ifdef KITTENS_SM10X
         std::is_same_v<dtype, fp8e8m0> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
         std::is_same_v<dtype, fp4e2m1_2> ? CU_TENSOR_MAP_DATA_TYPE_UINT8 :
 #endif

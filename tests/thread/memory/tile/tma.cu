@@ -12,7 +12,7 @@ struct test_load { // load with TMA, write out normally
                                                       std::is_same_v<T, kittens::half> ? "tma_load_gmem=half" :
                                                       std::is_same_v<T, kittens::int8> ? "tma_load_gmem=int8" :
                                                       std::is_same_v<T, kittens::uint8> ? "tma_load_gmem=uint8" :
-                                                        #if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+                                                        #if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
                                                       std::is_same_v<T, kittens::fp8e4m3> ? "tma_load_gmem=fp8e4m3":
                                                       std::is_same_v<T, kittens::fp8e5m2> ? "tma_load_gmem=fp8e5m2":
                                                         #endif
@@ -99,7 +99,7 @@ struct test_store { // load normally, store with TMA
                                                       std::is_same_v<T, kittens::half> ? "tma_store_gmem=half" :
                                                       std::is_same_v<T, kittens::int8> ? "tma_store_gmem=int8" :
                                                       std::is_same_v<T, kittens::uint8> ? "tma_store_gmem=uint8" :
-                                                      #if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+                                                      #if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
                                                       std::is_same_v<T, kittens::fp8e4m3> ? "tma_store_gmem=fp8e4m3":
                                                       std::is_same_v<T, kittens::fp8e5m2> ? "tma_store_gmem=fp8e5m2":
                                                       #endif
@@ -136,7 +136,7 @@ struct test_store_add_reduce {
                                                       std::is_same_v<T, kittens::half> ? "tma_store_add_reduce_gmem=half" :
                                                       std::is_same_v<T, kittens::int8> ? "tma_store_add_reduce_gmem=int8" :
                                                       std::is_same_v<T, kittens::uint8> ? "tma_store_add_reduce_gmem=uint8" :
-                                                      #if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+                                                      #if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
                                                       std::is_same_v<T, kittens::fp8e4m3> ? "tma_store_add_reduce_gmem=fp8e4m3":
                                                       std::is_same_v<T, kittens::fp8e5m2> ? "tma_store_add_reduce_gmem=fp8e5m2":
                                                         #endif
@@ -178,7 +178,7 @@ struct test_store_min_reduce {
                                                       std::is_same_v<T, kittens::half> ? "tma_store_min_reduce_gmem=half" :
                                                       std::is_same_v<T, kittens::int8> ? "tma_store_min_reduce_gmem=int8" :
                                                       std::is_same_v<T, kittens::uint8> ? "tma_store_min_reduce_gmem=uint8" :
-                                                      #if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+                                                      #if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
                                                       std::is_same_v<T, kittens::fp8e4m3> ? "tma_store_min_reduce_gmem=fp8e4m3":
                                                       std::is_same_v<T, kittens::fp8e5m2> ? "tma_store_min_reduce_gmem=fp8e5m2":
                                                         #endif
@@ -219,7 +219,7 @@ struct test_store_max_reduce {
                                                       std::is_same_v<T, kittens::half> ? "tma_store_max_reduce_gmem=half" :
                                                       std::is_same_v<T, kittens::int8> ? "tma_store_max_reduce_gmem=int8" :
                                                       std::is_same_v<T, kittens::uint8> ? "tma_store_max_reduce_gmem=uint8" :
-                                                      #if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+                                                      #if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
                                                       std::is_same_v<T, kittens::fp8e4m3> ? "tma_store_max_reduce_gmem=fp8e4m3":
                                                       std::is_same_v<T, kittens::fp8e5m2> ? "tma_store_max_reduce_gmem=fp8e5m2":
                                                         #endif
@@ -304,7 +304,7 @@ struct tma_sweep_gmem_type_2d {
         tma_sweep_size_2d<test<kittens::half>, MAX_H, MAX_W, NUM_WORKERS, args...>::run(results);
         tma_sweep_size_2d<test<kittens::int8>, MAX_H, MAX_W, NUM_WORKERS, args...>::run(results);
         tma_sweep_size_2d<test<kittens::uint8>, MAX_H, MAX_W, NUM_WORKERS, args...>::run(results);
-        #if defined(KITTENS_HOPPER) || defined(KITTENS_BLACKWELL)
+        #if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
         tma_sweep_size_2d<test<kittens::fp8e4m3>, MAX_H, MAX_W, NUM_WORKERS, args...>::run(results);
         tma_sweep_size_2d<test<kittens::fp8e5m2>, MAX_H, MAX_W, NUM_WORKERS, args...>::run(results);
         #endif

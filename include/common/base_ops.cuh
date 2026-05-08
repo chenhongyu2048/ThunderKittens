@@ -267,7 +267,7 @@ struct sum {
     template<typename T> static __device__ inline T op(const T &a, const T &b) { return a+b; }
 };
 template<> __device__ inline float2 sum::op<float2>(const float2 &a, const float2 &b) {
-#ifdef KITTENS_BLACKWELL
+#ifdef KITTENS_SM10X
     float2 c;
     asm volatile("add.f32x2 %0, %1, %2;" : "=l"(*(uint64_t*)&c) : "l"(*(uint64_t*)&a), "l"(*(uint64_t*)&b));
     return c;
@@ -293,7 +293,7 @@ struct sub {
     template<typename T> static __device__ inline T op(const T &a, const T &b) { return a-b; }
 };
 template<> __device__ inline float2 sub::op<float2>(const float2 &a, const float2 &b) { 
-#ifdef KITTENS_BLACKWELL
+#ifdef KITTENS_SM10X
     float2 c;
     asm volatile("sub.f32x2 %0, %1, %2;" : "=l"(*(uint64_t*)&c) : "l"(*(uint64_t*)&a), "l"(*(uint64_t*)&b));
     return c;
@@ -319,7 +319,7 @@ struct mul {
     template<typename T> static __device__ inline T op(const T &a, const T &b) { return a*b; }
 };
 template<> __device__ inline float2 mul::op<float2>(const float2 &a, const float2 &b) { 
-#ifdef KITTENS_BLACKWELL
+#ifdef KITTENS_SM10X
     float2 c;
     asm volatile("mul.f32x2 %0, %1, %2;" : "=l"(*(uint64_t*)&c) : "l"(*(uint64_t*)&a), "l"(*(uint64_t*)&b));
     return c;
@@ -406,7 +406,7 @@ struct fma_AxBtC {
     }
 };
 template<> __device__ inline float2 fma_AxBtC::op<float2>(const float2 &a, const float2 &b, const float2 &c) {
-#ifdef KITTENS_BLACKWELL
+#ifdef KITTENS_SM10X
     float2 d;
     asm volatile("fma.rn.f32x2 %0, %1, %2, %3;" : "=l"(*(uint64_t*)&d) : "l"(*(uint64_t*)&a), "l"(*(uint64_t*)&b), "l"(*(uint64_t*)&c));
     return d;
@@ -432,7 +432,7 @@ struct fma_AxCtB { // this is the one needed for attention
     }
 };
 template<> __device__ inline float2 fma_AxCtB::op<float2>(const float2 &a, const float2 &b, const float2 &c) {
-#ifdef KITTENS_BLACKWELL
+#ifdef KITTENS_SM10X
     float2 d;
     asm volatile("fma.rn.f32x2 %0, %1, %2, %3;" : "=l"(*(uint64_t*)&d) : "l"(*(uint64_t*)&a), "l"(*(uint64_t*)&c), "l"(*(uint64_t*)&b));
     return d;
