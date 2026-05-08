@@ -194,11 +194,11 @@ void benchmark(int M, int N, int K) {
 
   double runtime_ms = static_cast<double>(milliseconds) / profiling_iters;
   double runtime_s = runtime_ms / 1000.0;
-  int64_t flops = int64_t(2) * M * N * K;
-  double tflops = (double(flops) / 1e12) / runtime_s;
+  int64_t ops = int64_t(2) * M * N * K;
+  double tops = (double(ops) / 1e12) / runtime_s;
 
   std::cout << "Average runtime: " << runtime_ms << " ms" << std::endl;
-  std::cout << "Performance: " << tflops << " TFLOP/s" << std::endl;
+  std::cout << "Performance: " << tops << " TOP/s" << std::endl;
 
   // Verify correctness
   fill<int32_t, FillMode::CONSTANT>(blocks_D[0], size_D, 0.0f);
