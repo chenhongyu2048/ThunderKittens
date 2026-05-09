@@ -131,14 +131,22 @@ __global__ void kernel(const __grid_constant__ globals<C> g) {
             rt<int, C::Mb/8, C::Nb> d_reg;
             warp::zero(d_reg);
 
-            for (int idx = 0; idx < iters_per_task; idx++) {
+            wait(inputs_arrived[input_ring], get_phasebit<0>(bitfield, input_ring));
+            warpgroup::mma_ABt(d_reg, a_smem[input_ring][warpgroup_id], b_smem[input_ring]);
+            int prev_ring = input_ring;
+            update_phasebit<0>(bitfield, input_ring);
+            input_ring = ring_advance<C::LOAD_PIPE_DEPTH>(input_ring);
+            for (int idx = 1; idx < iters_per_task; idx++) {
                 wait(inputs_arrived[input_ring], get_phasebit<0>(bitfield, input_ring));
                 warpgroup::mma_ABt(d_reg, a_smem[input_ring][warpgroup_id], b_smem[input_ring]);
-                warpgroup::mma_async_wait();
-                warp::arrive(inputs_finished[input_ring]);
+                warpgroup::mma_async_wait<1>();
+                warp::arrive(inputs_finished[prev_ring]);
+                prev_ring = input_ring;
                 update_phasebit<0>(bitfield, input_ring);
                 input_ring = ring_advance<C::LOAD_PIPE_DEPTH>(input_ring);
             }
+            warpgroup::mma_async_wait();
+            warp::arrive(inputs_finished[prev_ring]);
 
             wait(outputs_finished, get_phasebit<1>(bitfield, 0));
             warpgroup::store(d_smem[warpgroup_id], d_reg);
