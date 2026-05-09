@@ -41,10 +41,10 @@ struct alignas(64) CUtensorMap { char __opaque[128]; };
 // CUDA type headers
 #include <cuda_fp16.h>
 #include <cuda_bf16.h>
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 #include <cuda_fp8.h>
 #endif
-#if defined(KITTENS_SM10X)
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 #include <cuda_fp4.h>
 #endif
 

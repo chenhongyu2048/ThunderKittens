@@ -60,7 +60,7 @@ struct KITTENS_DEFAULT_ALIGN sv {
     static_assert(length % TILE_ROW_DIM<T> == 0, "Length must be divisible by the tile dimension");
     static constexpr int tiles  = length / TILE_ROW_DIM<T>; ///< Length in subtiles.'
 
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
     static constexpr int num_alloc_elements = ((length * sizeof(dtype) + 127) / 128) * (128 / sizeof(dtype)); // round up to the nearest 128-byte boundary
 #else
     static constexpr int num_alloc_elements = length;
@@ -89,7 +89,7 @@ struct KITTENS_DEFAULT_ALIGN sv {
     }
 };
 
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 namespace detail {
 namespace tma {
 // We need a template system to determine how to divide up a long shared vector into multiple subvectors.
@@ -115,11 +115,11 @@ template<size_t _length> using sv_fl = sv<float, _length>;
 template<size_t _length> using sv_int8 = sv<int8, _length>;
 template<size_t _length> using sv_uint8 = sv<uint8, _length>;
 template<size_t _length> using sv_int = sv<int, _length>;
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 template<int _length> using sv_fp8e4m3 = sv<fp8e4m3, _length>;
 template<int _length> using sv_fp8e5m2 = sv<fp8e5m2, _length>;
 #endif
-#if defined(KITTENS_SM10X)
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 template<int _length> using sv_fp8e8m0 = sv<fp8e8m0, _length>;
 template<int _length> using sv_fp4e2m1_2 = sv<fp4e2m1_2, _length>;
 #endif
@@ -136,11 +136,11 @@ __device__ inline void print(const SV& sv) {
             printf("%f ", __half2float(sv[i]));
         } else if constexpr (std::is_same_v<typename SV::dtype, float>) {
             printf("%f ", sv[i]);
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
         } else if constexpr (std::is_same_v<typename SV::dtype, fp8e4m3>) {
             printf("%f ", static_cast<float>(sv[i]));
 #endif
-#ifdef KITTENS_SM10X
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
         } else if constexpr (std::is_same_v<typename SV::dtype, fp8e8m0>) {
             printf("%f ", static_cast<float>(sv[i]));
 #endif

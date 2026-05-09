@@ -47,7 +47,7 @@ __device__ static inline void arrive(int id) {
 #include "mma/mma.cuh"
 #include "util/util.cuh"
 
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 
 template<int n_reg> __device__ static inline void increase_registers() {
     static_assert(n_reg % 8 == 0, "n_reg must be a multiple of 8");

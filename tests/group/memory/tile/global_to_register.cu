@@ -10,7 +10,7 @@ struct group_load_store {
     >; // this is group-level
     static inline const std::string test_identifier = std::is_same_v<T, kittens::bf16> ? "group_reg_loadstore_gmem=bf16" :
                                                       std::is_same_v<T, kittens::half> ? "group_reg_loadstore_gmem=half" :
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
                                                       std::is_same_v<T, kittens::fp8e4m3> ? "group_reg_loadstore_gmem=fp8e4m3" :
                                                       std::is_same_v<T, kittens::fp8e5m2> ? "group_reg_loadstore_gmem=fp8e5m2" :
 #endif
@@ -79,7 +79,7 @@ void group::memory::tile::global_to_register::tests(test_data &results) {
     sweep_size_2d<group_load_store<kittens::half>, SIZE, SIZE, 4, kittens::ducks::rt_layout::col>::run(results);
     sweep_size_2d<group_load_store<kittens::half>, SIZE, SIZE, 12, kittens::ducks::rt_layout::row>::run(results);
     sweep_size_2d<group_load_store<kittens::half>, SIZE, SIZE, 12, kittens::ducks::rt_layout::col>::run(results);
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
     sweep_size_2d<group_load_store<kittens::fp8e4m3>, SIZE, SIZE, 1, kittens::ducks::rt_layout::row>::run(results);
     sweep_size_2d<group_load_store<kittens::fp8e4m3>, SIZE, SIZE, 2, kittens::ducks::rt_layout::row>::run(results);
     sweep_size_2d<group_load_store<kittens::fp8e4m3>, SIZE, SIZE, 4, kittens::ducks::rt_layout::row>::run(results);

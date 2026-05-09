@@ -57,13 +57,13 @@ __host__ static inline void tensor_check(const at::Tensor &t) {
         TORCH_CHECK(t.dtype() == at::ScalarType::Long, "Tensor has invalid dtype (expected int64)");
     } else if constexpr (std::is_same_v<typename Layout::dtype, uint64_t>) {
         TORCH_CHECK(t.dtype() == at::ScalarType::UInt64, "Tensor has invalid dtype (expected uint64)");
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
     } else if constexpr (std::is_same_v<typename Layout::dtype, ::kittens::fp8e4m3>) {
         TORCH_CHECK(t.dtype() == at::ScalarType::Float8_e4m3fn, "Tensor has invalid dtype (expected fp8e4m3)");
     } else if constexpr (std::is_same_v<typename Layout::dtype, ::kittens::fp8e5m2>) {
         TORCH_CHECK(t.dtype() == at::ScalarType::Float8_e5m2, "Tensor has invalid dtype (expected fp8e5m2)");
 #endif
-#ifdef KITTENS_SM10X
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
     } else if constexpr (std::is_same_v<typename Layout::dtype, ::kittens::fp8e8m0>) {
         TORCH_CHECK(t.dtype() == at::ScalarType::Float8_e8m0fnu || t.dtype() == at::ScalarType::Byte, "Tensor has invalid dtype (expected fp8e8m0)");
     } else if constexpr (std::is_same_v<typename Layout::dtype, ::kittens::fp4e2m1_2>) {
@@ -207,7 +207,7 @@ __host__ static inline void launch_kernel(const Globals &G) {
 
 #if defined(KITTENS_SM90)
     static_assert(Config::CLUSTER_SIZE <= 8, "Cluster size must be less than or equal to 8 for Hopper");
-#elif defined(KITTENS_SM10X)
+#elif defined(KITTENS_SM10X) || defined(KITTENS_SM120)
     static_assert(Config::CLUSTER_SIZE <= 16, "Cluster size must be less than or equal to 16 for Blackwell");
     if constexpr (Config::CLUSTER_SIZE > 8)
         CUDACHECK(cudaFuncSetAttribute(global_kernel<Config, Globals, Kernel>, cudaFuncAttributeNonPortableClusterSizeAllowed, 1));

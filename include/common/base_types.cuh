@@ -49,13 +49,13 @@ using int8_4 = char4;
 using uint8_2 = uchar2;
 using uint8_4 = uchar4;
 
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 /**
  * @brief float8 floating-point type.
  */
 using fp8e4m3 = __nv_fp8_e4m3;
 using fp8e5m2 = __nv_fp8_e5m2;
-#ifdef KITTENS_SM10X
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 using fp8e8m0 = __nv_fp8_e8m0;
 #endif
 /**
@@ -63,7 +63,7 @@ using fp8e8m0 = __nv_fp8_e8m0;
  */
 using fp8e4m3_2 = __nv_fp8x2_e4m3;
 using fp8e5m2_2 = __nv_fp8x2_e5m2;
-#ifdef KITTENS_SM10X
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 using fp8e8m0_2 = __nv_fp8x2_e8m0;
 #endif
 /**
@@ -71,12 +71,12 @@ using fp8e8m0_2 = __nv_fp8x2_e8m0;
  */
 using fp8e4m3_4 = __nv_fp8x4_e4m3;
 using fp8e5m2_4 = __nv_fp8x4_e5m2;
-#ifdef KITTENS_SM10X
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 using fp8e8m0_4 = __nv_fp8x4_e8m0;
 #endif
 #endif
 
-#ifdef KITTENS_SM10X
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 /**
  * @brief float4 floating-point type.
  */
@@ -99,7 +99,7 @@ namespace ducks {
  */
 namespace base_types {
 
-#if defined(KITTENS_SM10X)
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 template<typename T>
 concept T2 = std::is_same_v<T, float2>     || 
              std::is_same_v<T, bf16_2>     || 
@@ -231,7 +231,7 @@ template<> struct constants<half_2> {
     static __device__ inline constexpr half_2 pos_infty() { return half_2{constants<half>::pos_infty(), constants<half>::pos_infty()}; }
     static __device__ inline constexpr half_2 neg_infty() { return half_2{constants<half>::neg_infty(), constants<half>::neg_infty()}; }
 };
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 template<> struct constants<fp8e4m3> {
     static __device__ inline constexpr fp8e4m3 zero() { return std::bit_cast<__nv_fp8_e4m3>(uint8_t(0x00)); }
     static __device__ inline constexpr fp8e4m3 one() { return std::bit_cast<__nv_fp8_e4m3>(uint8_t(0x38)); }
@@ -257,7 +257,7 @@ template<> struct constants<fp8e5m2_4> {
     static __device__ inline constexpr fp8e5m2_4 one() { return std::bit_cast<fp8e5m2_4>(uint32_t(0x3C3C3C3C)); }
 };
 #endif
-#if defined(KITTENS_SM10X)
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 template<> struct constants<fp4e2m1> {
     static __device__ inline constexpr fp4e2m1 zero() { return std::bit_cast<fp4e2m1>(uint8_t(0x00)); }
     static __device__ inline constexpr fp4e2m1 one() { return std::bit_cast<fp4e2m1>(uint8_t(0x02)); } // FP4 is packed like this: 0b00001111
@@ -484,7 +484,7 @@ template<> struct packing<float4> {
 template<> struct packing<int4> {
     static __device__ inline constexpr int num() { return 4; }
 };
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 template<> struct packing<fp8e4m3> {
     static __device__ inline constexpr int num() { return 1; }
     using unpacked_type = fp8e4m3;
@@ -506,7 +506,7 @@ template<> struct packing<fp8e5m2_4> {
     using packed_type = fp8e5m2_4;
 };
 #endif
-#ifdef KITTENS_SM10X
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 template<> struct packing<fp8e8m0> {
     static __device__ inline constexpr int num() { return 1; }
     using unpacked_type = fp8e8m0;
@@ -606,7 +606,7 @@ template<> struct convertor<half_2, bf16_2> {
         return __float22half2_rn(__bfloat1622float2(u));
     }
 };
-#ifdef KITTENS_SM10X
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 // fp8e8m0
 template<> struct convertor<fp8e8m0_4, float4> {
     static __host__ __device__ inline fp8e8m0_4 convert(const float4& u) {
@@ -682,7 +682,7 @@ template<> struct convertor<float2, fp4e2m1_2> {
     }
 };
 #endif
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 // fp8e4m3
 template<> struct convertor<fp8e4m3_4, float4> {
     static __host__ __device__ inline fp8e4m3_4 convert(const float4& u) {

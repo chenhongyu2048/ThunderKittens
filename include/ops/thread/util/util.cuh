@@ -6,7 +6,7 @@
 #pragma once
 
 #include "sync.cuh"
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 #include "tma.cuh"
 #endif
 
@@ -166,7 +166,7 @@ template<> struct move<float4> {
         asm volatile("st.global.v4.f32 [%4], {%0, %1, %2, %3};\n" : : "f"(src.x), "f"(src.y), "f"(src.z), "f"(src.w), "l"(dst));
     }
 };
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 template<> struct move<fp8e4m3_4> {
     __device__ static inline void ldsm4(fp8e4m3_4& dst1, fp8e4m3_4& dst2, fp8e4m3_4& dst3, fp8e4m3_4& dst4, uint32_t src) {
         asm volatile("ldmatrix.sync.aligned.m8n8.x4.shared::cta.b16 {%0, %1, %2, %3}, [%4];\n" :
@@ -212,7 +212,7 @@ template<cache_policy policy> __device__ inline uint64_t make_cache_policy() {
 
 /* CLC scheduler operations */
 
-#ifdef KITTENS_SM10X
+#if defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 
 namespace clc {
 
@@ -270,7 +270,7 @@ __device__ static inline result query(handle &h) {
 
 #endif
 
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 
 /**
  * @brief Programmatic Dependent Kernel Launch (PDL) utilities. Available on Hopper and later.

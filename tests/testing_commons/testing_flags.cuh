@@ -1,5 +1,8 @@
 /* ----------  TEST INCLUSION MACROS  ---------- */
 
+// Resolve architecture macros first
+#include "kittens.cuh"
+
 /* -----  DEPTH 0 MACROS  ----- */
 
 // Catchall macros
@@ -67,7 +70,7 @@
 #define TEST_THREAD_MEMORY_TILE_GLOBAL_TO_REGISTER
 #define TEST_THREAD_MEMORY_TILE_GLOBAL_TO_SHARED
 #define TEST_THREAD_MEMORY_TILE_SHARED_TO_REGISTER
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 #define TEST_THREAD_MEMORY_TILE_TMA
 #define TEST_THREAD_MEMORY_TILE_TMA_MULTICAST
 #endif
@@ -77,7 +80,7 @@
 #define TEST_THREAD_MEMORY_VEC_GLOBAL_TO_REGISTER
 #define TEST_THREAD_MEMORY_VEC_GLOBAL_TO_SHARED
 #define TEST_THREAD_MEMORY_VEC_SHARED_TO_REGISTER
-#if defined(KITTENS_SM90) || defined(KITTENS_SM10X)
+#if defined(KITTENS_SM90) || defined(KITTENS_SM10X) || defined(KITTENS_SM120)
 #define TEST_THREAD_MEMORY_VEC_TMA
 #define TEST_THREAD_MEMORY_VEC_TMA_MULTICAST
 #endif
