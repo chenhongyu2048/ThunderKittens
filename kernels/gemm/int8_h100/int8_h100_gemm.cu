@@ -79,6 +79,8 @@ __global__ void kernel(const __grid_constant__ globals<C> g) {
 
     __shared__ semaphore inputs_arrived[C::LOAD_PIPE_DEPTH];
     __shared__ semaphore inputs_finished[C::LOAD_PIPE_DEPTH];
+    __shared__ semaphore outputs_arrived;
+    __shared__ semaphore outputs_finished;
     uint32_t bitfield = 0xFFFF0000;
 
     if (threadIdx.x == 0) {
@@ -87,6 +89,8 @@ __global__ void kernel(const __grid_constant__ globals<C> g) {
             init_semaphore(inputs_arrived[i],  0, 1);
             init_semaphore(inputs_finished[i], 0, C::NUM_CONSUMERS * WARPGROUP_WARPS);
         }
+        init_semaphore(outputs_arrived,  0, 2);
+        init_semaphore(outputs_finished, 0, 1);
     }
     __syncthreads();
 
@@ -108,13 +112,22 @@ __global__ void kernel(const __grid_constant__ globals<C> g) {
                     input_ring = ring_advance<C::LOAD_PIPE_DEPTH>(input_ring);
                 }
             }
+        } else if (warpgroup::warpid() == 1 && warp::elect_leader()) {
+            for (int task_id = blockIdx.x; task_id < num_blks; task_id += gridDim.x) {
+                int2 tile_coord = get_swizzled_2d_idx<C::SUPERGROUP_SIZE>(rblks, cblks, task_id);
+                wait(outputs_arrived, get_phasebit<0>(bitfield, 0));
+                #pragma unroll
+                for (int i = 0; i < 2; i++)
+                    tma::store_async(g.d, d_smem[i], {tile_coord.x*2+i, tile_coord.y});
+                tma::store_async_read_wait();
+                arrive(outputs_finished);
+                update_phasebit<0>(bitfield, 0);
+            }
         }
     } else {
         warpgroup::increase_registers<C::CONSUMER_REGISTERS>();
 
         for (int task_id = blockIdx.x; task_id < num_blks; task_id += gridDim.x) {
-            int2 tile_coord = get_swizzled_2d_idx<C::SUPERGROUP_SIZE>(rblks, cblks, task_id);
-
             rt<int, C::Mb/8, C::Nb> d_reg;
             warp::zero(d_reg);
 
@@ -124,14 +137,14 @@ __global__ void kernel(const __grid_constant__ globals<C> g) {
                 warpgroup::mma_async_wait();
                 warp::arrive(inputs_finished[input_ring]);
                 update_phasebit<0>(bitfield, input_ring);
-                input_ring=ring_advance<C::LOAD_PIPE_DEPTH>(input_ring);
+                input_ring = ring_advance<C::LOAD_PIPE_DEPTH>(input_ring);
             }
 
+            wait(outputs_finished, get_phasebit<1>(bitfield, 0));
             warpgroup::store(d_smem[warpgroup_id], d_reg);
             warpgroup::sync(warpgroup_id+1);
-            warpgroup::tma::store_async(g.d, d_smem[warpgroup_id], {tile_coord.x*2+warpgroup_id, tile_coord.y});
-            warpgroup::tma::store_async_read_wait();
-            warpgroup::sync(warpgroup_id+1);
+            warpgroup::arrive(outputs_arrived);
+            update_phasebit<1>(bitfield, 0);
         }
     }
 }
@@ -245,15 +258,15 @@ __host__ double run_benchmark(size_t M, size_t N, size_t K, bool ncu = false) {
 }
 
 __host__ int main() {
-    int N;
     bool ncu = false;
+    int N;
 
     N = 1024;
-    run_benchmark<config<128, 128, 128, 8, 4>>(N, N, N, ncu);
+    run_benchmark<config<128,  64, 128, 1, 8>>(N, N, N, ncu);
     N = 2048;
-    run_benchmark<config<128, 128, 128, 8, 4>>(N, N, N, ncu);
+    run_benchmark<config<128, 128, 128, 1, 5>>(N, N, N, ncu);
     N = 4096;
-    run_benchmark<config<128, 128, 128, 8, 4>>(N, N, N, ncu);
+    run_benchmark<config<128, 128, 128, 4, 5>>(N, N, N, ncu);
     N = 8192;
     run_benchmark<config<128, 128, 128, 8, 4>>(N, N, N, ncu);
     N = 16384;
