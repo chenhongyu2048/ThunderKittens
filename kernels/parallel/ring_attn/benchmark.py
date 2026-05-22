@@ -20,7 +20,6 @@ from common import (
     clean_print
 )
 
-from flash_attn.cute.interface import _flash_attn_fwd
 from _C import TKParallelTensor, tk_mha_fwd_d128  # type: ignore
 
 
@@ -47,6 +46,7 @@ def flash_attn_fwd(
     V: torch.Tensor,
     O: torch.Tensor
 ) -> None:
+    from flash_attn.cute.interface import _flash_attn_fwd
     # We do not care about the speed here
     Q_flash = Q.transpose(1, 2).contiguous()
     K_flash = K.transpose(1, 2).contiguous()
@@ -180,12 +180,14 @@ def run(
 if __name__ == "__main__":
     local_rank, local_world_size = init_distributed_environment()
 
-    B = 16
-    H = 16
+    B = 1
+    H = 32
     D = 128
 
-    for N in [local_world_size * 768 * (2 ** i) for i in range(1, 7)]:
-        for num_comm_sms in [2, 4, 8, 16, 32, 64]: # must be even
+    # for N in [local_world_size * 768 * (2 ** i) for i in range(1, 7)]:
+    for N in [local_world_size * 8064, ]:
+        # for num_comm_sms in [2, 4, 8, 16, 32, 64]: # must be even
+        for num_comm_sms in [2, 4, 8, 16]: # must be even
             run(B, H, N, D, num_comm_sms, local_rank, local_world_size, check_correctness=False, do_profile=False)
 
     destroy_distributed_environment()
