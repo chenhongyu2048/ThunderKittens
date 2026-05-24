@@ -25,4 +25,7 @@ export http_proxy=http://u-MS9MdQ:Qixfk8ku@10.248.0.7:3128
 cd /data/run01/scyb683/ThunderKittens/kernels/attention/attn_h100_pk
 
 # make clean && make && 
-python benchmark.py
+python benchmark.py --b 1 --qo_head 32 --kv_head 8 --d 128 --fwd_only
+python benchmark.py --b 1 --qo_head 32 --kv_head 32 --d 128 --fwd_only
+python benchmark.py --b 16 --qo_head 32 --kv_head 8 --d 128 --fwd_only
+python benchmark.py --b 16 --qo_head 32 --kv_head 32 --d 128 --fwd_only

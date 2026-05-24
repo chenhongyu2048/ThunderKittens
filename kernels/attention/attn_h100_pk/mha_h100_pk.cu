@@ -220,54 +220,37 @@ attention_forward(at::Tensor q, at::Tensor k, at::Tensor v, bool causal)
     cudaDeviceSynchronize();
     auto stream = at::cuda::getCurrentCUDAStream().stream(); 
 
+    auto launch = [&]<int HEAD_DIM, bool IS_CAUSAL>() {
+        using ker_template = attn_fwd_template<HEAD_DIM, IS_CAUSAL>;
+        using layout = typename ker_template::layout;
+
+        typename layout::qo_global Qg(d_q, (size_t)batch, (size_t)qo_heads, (size_t)seq_len, nullptr);
+        typename layout::kv_global Kg(d_k, (size_t)batch, (size_t)kv_heads, (size_t)seq_len, nullptr);
+        typename layout::kv_global Vg(d_v, (size_t)batch, (size_t)kv_heads, (size_t)seq_len, nullptr);
+        typename layout::qo_global Og(d_o, (size_t)batch, (size_t)qo_heads, (size_t)seq_len, nullptr);
+        typename layout::globals globals = {Og, Qg, Kg, Vg};
+
+        unsigned long mem_size = kittens::MAX_SHARED_MEMORY - 2000;
+        cudaFuncSetAttribute(
+            prototype::lcf::kernel<ker_template>,
+            cudaFuncAttributeMaxDynamicSharedMemorySize,
+            mem_size
+        );
+
+        constexpr int BLOCK_SIZE = prototype::detail::NUM_THREADS_v<ker_template>;
+        dim3 grid(132, 1, 1);
+        prototype::lcf::kernel<ker_template><<<grid, BLOCK_SIZE, mem_size, stream>>>(globals);
+
+        CHECK_CUDA_ERROR(cudaGetLastError());
+        cudaStreamSynchronize(stream);
+    };
+
     if (head_dim == 64) {
-        using ker_template = attn_fwd_template<64>;
-        using layout = ker_template::layout;
-
-        layout::qo_global Qg(d_q, (size_t)batch, (size_t)qo_heads, (size_t)seq_len, nullptr);
-        layout::kv_global Kg(d_k, (size_t)batch, (size_t)kv_heads, (size_t)seq_len, nullptr);
-        layout::kv_global Vg(d_v, (size_t)batch, (size_t)kv_heads, (size_t)seq_len, nullptr);
-        layout::qo_global Og(d_o, (size_t)batch, (size_t)qo_heads, (size_t)seq_len, nullptr);
-        layout::globals globals = {Og, Qg, Kg, Vg};
-
-        unsigned long mem_size = kittens::MAX_SHARED_MEMORY - 2000;
-        cudaFuncSetAttribute(
-            prototype::lcf::kernel<ker_template>,
-            cudaFuncAttributeMaxDynamicSharedMemorySize,
-            mem_size
-        );
-
-        constexpr int BLOCK_SIZE = prototype::detail::NUM_THREADS_v<ker_template>;
-        dim3 grid(132, 1, 1);
-        prototype::lcf::kernel<ker_template><<<grid, BLOCK_SIZE, mem_size, stream>>>(globals);
-
-        CHECK_CUDA_ERROR(cudaGetLastError());
-        cudaStreamSynchronize(stream);
-    }
-
-    if (head_dim == 128) {
-        using ker_template = attn_fwd_template<128>;
-        using layout = ker_template::layout;
-
-        layout::qo_global Qg(d_q, (size_t)batch, (size_t)qo_heads, (size_t)seq_len, nullptr);
-        layout::kv_global Kg(d_k, (size_t)batch, (size_t)kv_heads, (size_t)seq_len, nullptr);
-        layout::kv_global Vg(d_v, (size_t)batch, (size_t)kv_heads, (size_t)seq_len, nullptr);
-        layout::qo_global Og(d_o, (size_t)batch, (size_t)qo_heads, (size_t)seq_len, nullptr);
-        layout::globals globals = {Og, Qg, Kg, Vg};
-
-        unsigned long mem_size = kittens::MAX_SHARED_MEMORY - 2000;
-        cudaFuncSetAttribute(
-            prototype::lcf::kernel<ker_template>,
-            cudaFuncAttributeMaxDynamicSharedMemorySize,
-            mem_size
-        );
-
-        constexpr int BLOCK_SIZE = prototype::detail::NUM_THREADS_v<ker_template>;
-        dim3 grid(132, 1, 1);
-        prototype::lcf::kernel<ker_template><<<grid, BLOCK_SIZE, mem_size, stream>>>(globals);
-
-        CHECK_CUDA_ERROR(cudaGetLastError());
-        cudaStreamSynchronize(stream);
+        if (is_causal) launch.template operator()<64, true>();
+        else           launch.template operator()<64, false>();
+    } else if (head_dim == 128) {
+        if (is_causal) launch.template operator()<128, true>();
+        else           launch.template operator()<128, false>();
     }
 
     return {o, l_vec};

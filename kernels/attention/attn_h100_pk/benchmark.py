@@ -1,6 +1,7 @@
 import torch
 from functools import partial
 import numpy as np
+import argparse
 
 import _C as tk
 
@@ -30,21 +31,25 @@ def get_flops(batch, seqlen, nheads, headdim, causal, mode="fwd"):
 
 ################ ATTENTION ################
 
-def get_attention_inputs(b, h, n, dv, dt=torch.bfloat16, pad_multiple=0, ):
+def get_attention_inputs(b, qo_head, kv_head, n, dv, dt=torch.bfloat16, pad_multiple=0):
 
     if pad_multiple:
-        n = (n // pad_multiple) * pad_multiple + pad_multiple  
+        n = (n // pad_multiple) * pad_multiple + pad_multiple
 
-    q = torch.randn(b, h, n, dv, dtype=dt, device='cuda').requires_grad_(True)
-    k = torch.randn(b, h, n, dv, dtype=dt, device='cuda').requires_grad_(True)
-    v = torch.randn(b, h, n, dv, dtype=dt, device='cuda').requires_grad_(True)
-    dO = torch.randn(b, h, n, dv, dtype=dt, device='cuda')
+    q = torch.randn(b, qo_head, n, dv, dtype=dt, device='cuda').requires_grad_(True)
+    k = torch.randn(b, kv_head, n, dv, dtype=dt, device='cuda').requires_grad_(True)
+    v = torch.randn(b, kv_head, n, dv, dtype=dt, device='cuda').requires_grad_(True)
+    dO = torch.randn(b, qo_head, n, dv, dtype=dt, device='cuda')
     return q, k, v, dO
 
 class pytorch_attention(torch.nn.Module):
     def __init__(self):
         super().__init__()
     def forward(self, q, k, v, causal):
+        n_rep = q.size(1) // k.size(1)
+        if n_rep > 1:
+            k = k.repeat_interleave(n_rep, dim=1)
+            v = v.repeat_interleave(n_rep, dim=1)
         QK = torch.matmul(q, k.transpose(-2, -1))
         QK /= (q.size(-1) ** 0.5)
         if causal:
@@ -54,7 +59,7 @@ class pytorch_attention(torch.nn.Module):
         y = torch.matmul(QK, v)
         return y
 
-def attention_test(dt, b, h, n, dv, causal, is_forwards, method_str, num_iters=10, verbose=True, torch_compile=False, **kwargs):
+def attention_test(dt, b, qo_head, kv_head, n, dv, causal, is_forwards, method_str, num_iters=10, verbose=True, torch_compile=False, **kwargs):
     
     pytorch_method = pytorch_attention()
     if torch_compile and method_str == "pytorch":
@@ -62,14 +67,14 @@ def attention_test(dt, b, h, n, dv, causal, is_forwards, method_str, num_iters=1
             pytorch_method = torch.compile(pytorch_method)
         except Exception as e:
             print(f"Could not compile pytorch_method: {e}")
-                    
+
     for stage in ['warmup', 'timed']:
         start_events = [torch.cuda.Event(enable_timing=True) for _ in range(num_iters)]
         end_events = [torch.cuda.Event(enable_timing=True) for _ in range(num_iters)]
 
         for i in range(num_iters):
             try:
-                q, k, v, dO = get_attention_inputs(b, h, n, dv, dt)
+                q, k, v, dO = get_attention_inputs(b, qo_head, kv_head, n, dv, dt)
                 
                 if method_str == "pytorch":
                     torch.cuda.synchronize()
@@ -81,7 +86,7 @@ def attention_test(dt, b, h, n, dv, causal, is_forwards, method_str, num_iters=1
                 elif method_str == "fa2": 
                     torch.cuda.synchronize()
                     start_events[i].record()
-                    y = torch.nn.functional.scaled_dot_product_attention(q, k, v, is_causal=causal)
+                    y = torch.nn.functional.scaled_dot_product_attention(q, k, v, is_causal=causal, enable_gqa=True)
                     end_events[i].record()
                     torch.cuda.synchronize()
 
@@ -216,9 +221,19 @@ import warnings
 warnings.filterwarnings("ignore", message=".*not a leaf Tensor is being accessed.*")
 warnings.filterwarnings("ignore", message=".*no current CUDA context.*")
 
-b = 16
-h = 32
-dv = 128
+parser = argparse.ArgumentParser(description="Attention benchmark")
+parser.add_argument("--b", type=int, default=16, help="Batch size")
+parser.add_argument("--qo_head", type=int, default=32, help="Number of query/output heads")
+parser.add_argument("--kv_head", type=int, default=32, help="Number of key/value heads")
+parser.add_argument("--d", type=int, default=128, choices=[64, 128], help="Head dimension (64 or 128)")
+parser.add_argument("--fwd_only", action="store_true", help="Skip backward pass benchmarks")
+args = parser.parse_args()
+
+b = args.b
+qo_head = args.qo_head
+kv_head = args.kv_head
+dv = args.d
+fwd_only = args.fwd_only
 
 def efficiency(flops, time):
     tflops = flops / 1e12
@@ -227,18 +242,18 @@ def efficiency(flops, time):
 
 def measure_efficiency(dt, n, method_name, method, verbose=False, torch_compile=True):
     if verbose:
-        print(f"{b=}, {n=}, {h=}, {dv=}")
+        print(f"{b=}, {n=}, {qo_head=}, {kv_head=}, {dv=}")
 
     if 'c=t' in method_name:
         causal = True
-        flops = get_flops(b, n, dv, h, causal=('causal'), mode='bwd' if 'bwd' in method_name else 'fwd')
+        flops = get_flops(b, n, dv, qo_head, causal=causal, mode='bwd' if 'bwd' in method_name else 'fwd')
     elif 'c=f' in method_name:
         causal = False
-        flops = get_flops(b, n, dv, h, causal=causal, mode='bwd' if 'bwd' in method_name else 'fwd')
+        flops = get_flops(b, n, dv, qo_head, causal=causal, mode='bwd' if 'bwd' in method_name else 'fwd')
     else:
-        flops = get_flops(b, n, dv, h)
+        flops = get_flops(b, n, dv, qo_head)
 
-    outputs, times = method(dt, b, h, n, dv, verbose=verbose, torch_compile=torch_compile)
+    outputs, times = method(dt, b, qo_head, kv_head, n, dv, verbose=verbose, torch_compile=torch_compile)
     times = times * 1000
 
     eff = efficiency(flops, times)
@@ -249,6 +264,7 @@ def measure_efficiency(dt, n, method_name, method, verbose=False, torch_compile=
 
 if __name__ == "__main__":
     print("Benchmarking the kernels...")
+    print(f"Config: b={b}, qo_head={qo_head}, kv_head={kv_head}, d={dv}, fwd_only={fwd_only}")
 
     verbose = True
     torch_compile = False
@@ -259,11 +275,12 @@ if __name__ == "__main__":
     name = NAME
     print("============" * 4, name, "============" * 4)
 
-    try:
-        implementations_bwd = IMPLEMENTATIONS_BWD
-        # implementations_list.append(implementations_bwd) # skip
-    except:
-        pass
+    if not fwd_only:
+        try:
+            implementations_bwd = IMPLEMENTATIONS_BWD
+            implementations_list.append(implementations_bwd)
+        except:
+            pass
 
     for implementations in implementations_list:
         method2tflops = {}
@@ -280,7 +297,7 @@ if __name__ == "__main__":
                 if "mamba2_triton" in m and n not in [1024, 2048, 4096, 8192]:
                     # the kernel results in DEVICE_SIDE_ASSERTS
                     continue
-                if "layernorm" in m and dv*h != 1024:
+                if "layernorm" in m and dv*qo_head != 1024:
                     # restrict to sizes we have implemented
                     print('skipping layernorm due to incompatible model dim')
                 if verbose:
