@@ -42,7 +42,7 @@ struct globals {
     using V_pgl = pgl<gl<bf16, -1, -1, -1, D, V_tile>, NUM_DEVICES, false>;
     using L_gl = gl<float, 1, -1, -1, -1, L_vec, L_vec_2x>;
     using O_gl = gl<bf16, -1, -1, -1, D, O_tile, O_tile_2x>;
-    using barrier_pgl = pgl<gl<int, -1, -1, -1, -1>, NUM_DEVICES, true>;
+    using barrier_pgl = pgl<gl<int, -1, -1, -1, -1>, NUM_DEVICES, false>;
 
     Q_gl Q;
     K_pgl K0;
@@ -394,8 +394,19 @@ struct barrier_config {
 };
 
 __device__ inline void barrier_kernel(const globals &G) {
-    // Ensure all devices exit together
-    barrier_all(G.barrier, {1, 0, 0}, G.dev_idx);
+    const auto idx = coord<ducks::default_type>{1, 0, 0};
+    #pragma unroll
+    for (int i = 0; i < globals::NUM_DEVICES; i++) {
+        asm volatile("{red.release.sys.global.add.s32 [%0], %1;}"
+            :: "l"(&G.barrier[i][idx]), "r"(1) : "memory");
+    }
+    int val;
+    do {
+        asm volatile("{ld.relaxed.sys.global.s32 %0, [%1];}"
+            : "=r"(val) : "l"(&G.barrier[G.dev_idx][idx]) : "memory");
+    } while (val != globals::NUM_DEVICES);
+    asm volatile("{red.release.sys.global.add.s32 [%0], %1;}"
+        :: "l"(&G.barrier[G.dev_idx][idx]), "r"(-globals::NUM_DEVICES) : "memory");
 }
 
 void entrypoint(

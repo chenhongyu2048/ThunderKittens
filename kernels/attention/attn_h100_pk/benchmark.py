@@ -114,7 +114,7 @@ def attention_test(dt, b, h, n, dv, causal, is_forwards, method_str, num_iters=1
                     print(f"Error: {e}")
                 return None, -1
 
-            if is_forwards and stage == 'timed':
+            if is_forwards:
                 continue
 
             try:
@@ -216,7 +216,7 @@ import warnings
 warnings.filterwarnings("ignore", message=".*not a leaf Tensor is being accessed.*")
 warnings.filterwarnings("ignore", message=".*no current CUDA context.*")
 
-b = 1
+b = 16
 h = 32
 dv = 128
 
@@ -261,7 +261,7 @@ if __name__ == "__main__":
 
     try:
         implementations_bwd = IMPLEMENTATIONS_BWD
-        implementations_list.append(implementations_bwd)
+        # implementations_list.append(implementations_bwd) # skip
     except:
         pass
 

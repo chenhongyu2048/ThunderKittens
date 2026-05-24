@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Working Directory
 
-Primary writable working folder: `kernels/parallel/ring_attn`
+Primary writable working folder: `kernels/parallel/ring_attn`, `kernels/attention/attn_h100_pk`
 
 ## What This Is
 

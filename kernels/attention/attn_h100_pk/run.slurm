@@ -22,7 +22,7 @@ export CPLUS_INCLUDE_PATH=$CUDNN_HOME/include:$CPLUS_INCLUDE_PATH
 export https_proxy=http://u-MS9MdQ:Qixfk8ku@10.248.0.7:3128
 export http_proxy=http://u-MS9MdQ:Qixfk8ku@10.248.0.7:3128
 
-cd /data/run01/scyb683/ThunderKittens/kernels/attention/mha_h100
+cd /data/run01/scyb683/ThunderKittens/kernels/attention/attn_h100_pk
 
 # make clean && make && 
 python benchmark.py

@@ -138,11 +138,11 @@ def run(
         del local_K, local_V
 
     barrier = TKParallelTensor(
-        (2, 1024, 1024), # 2 MB is the minimum requirement for multicast object anyways, so no loss here!
+        (2, 1024, 1024),
         dtype=torch.int,
         local_rank=local_rank,
         local_world_size=local_world_size,
-        multicast=True
+        multicast=False
     )
     barrier.data_.zero_()
 
@@ -184,8 +184,8 @@ if __name__ == "__main__":
     H = 32
     D = 128
 
-    # for N in [local_world_size * 768 * (2 ** i) for i in range(1, 7)]:
-    for N in [local_world_size * 8064, ]:
+    for N in [local_world_size * 768 * (2 ** i) for i in range(1, 7)]:
+    # for N in [local_world_size * 8064, ]:
         # for num_comm_sms in [2, 4, 8, 16, 32, 64]: # must be even
         for num_comm_sms in [2, 4, 8, 16]: # must be even
             run(B, H, N, D, num_comm_sms, local_rank, local_world_size, check_correctness=False, do_profile=False)
