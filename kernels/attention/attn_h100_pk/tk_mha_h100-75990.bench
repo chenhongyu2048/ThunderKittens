@@ -296,7 +296,7 @@ b=16, n=6144, qo_head=32, kv_head=8, dv=128
 Method attn_fwd_PT_c=t -- Efficiency: 24.19 TFLOPS, Time: 204565.4572 us and FLOPS: 4947802324992.00
 Sequence Length: 12288
 b=16, n=12288, qo_head=32, kv_head=8, dv=128
-Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 125.04 GiB is free. Including non-PyTorch memory, this process has 14.75 GiB memory in use. Of the allocated memory 6.78 GiB is allocated by PyTorch, and 7.31 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 125.04 GiB is free. Including non-PyTorch memory, this process has 14.75 GiB memory in use. Of the allocated memory 6.78 GiB is allocated by PyTorch, and 7.31 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https: //docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
 Method attn_fwd_PT_c=t -- Efficiency: -19791.21 TFLOPS, Time: -1000.0000 us and FLOPS: 19791209299968.00
 Method: attn_fwd_FA2_c=t
 Sequence Length: 768
@@ -361,7 +361,7 @@ b=16, n=6144, qo_head=32, kv_head=8, dv=128
 Method attn_fwd_PT_c=f -- Efficiency: 100.17 TFLOPS, Time: 98790.6425 us and FLOPS: 9895604649984.00
 Sequence Length: 12288
 b=16, n=12288, qo_head=32, kv_head=8, dv=128
-Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 126.35 GiB is free. Including non-PyTorch memory, this process has 13.44 GiB memory in use. Of the allocated memory 6.78 GiB is allocated by PyTorch, and 6.00 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 126.35 GiB is free. Including non-PyTorch memory, this process has 13.44 GiB memory in use. Of the allocated memory 6.78 GiB is allocated by PyTorch, and 6.00 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https: //docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
 Method attn_fwd_PT_c=f -- Efficiency: -39582.42 TFLOPS, Time: -1000.0000 us and FLOPS: 39582418599936.00
 Method: attn_fwd_FA2_c=f
 Sequence Length: 768
@@ -437,7 +437,7 @@ b=16, n=6144, qo_head=32, kv_head=32, dv=128
 Method attn_fwd_PT_c=t -- Efficiency: 24.31 TFLOPS, Time: 203514.6896 us and FLOPS: 4947802324992.00
 Sequence Length: 12288
 b=16, n=12288, qo_head=32, kv_head=32, dv=128
-Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 127.85 GiB is free. Including non-PyTorch memory, this process has 11.94 GiB memory in use. Of the allocated memory 6.03 GiB is allocated by PyTorch, and 5.25 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 127.85 GiB is free. Including non-PyTorch memory, this process has 11.94 GiB memory in use. Of the allocated memory 6.03 GiB is allocated by PyTorch, and 5.25 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https: //docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
 Method attn_fwd_PT_c=t -- Efficiency: -19791.21 TFLOPS, Time: -1000.0000 us and FLOPS: 19791209299968.00
 Method: attn_fwd_FA2_c=t
 Sequence Length: 768
@@ -502,7 +502,7 @@ b=16, n=6144, qo_head=32, kv_head=32, dv=128
 Method attn_fwd_PT_c=f -- Efficiency: 100.89 TFLOPS, Time: 98083.0276 us and FLOPS: 9895604649984.00
 Sequence Length: 12288
 b=16, n=12288, qo_head=32, kv_head=32, dv=128
-Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 126.35 GiB is free. Including non-PyTorch memory, this process has 13.44 GiB memory in use. Of the allocated memory 6.03 GiB is allocated by PyTorch, and 6.75 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 126.35 GiB is free. Including non-PyTorch memory, this process has 13.44 GiB memory in use. Of the allocated memory 6.03 GiB is allocated by PyTorch, and 6.75 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https: //docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
 Method attn_fwd_PT_c=f -- Efficiency: -39582.42 TFLOPS, Time: -1000.0000 us and FLOPS: 39582418599936.00
 Method: attn_fwd_FA2_c=f
 Sequence Length: 768

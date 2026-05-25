@@ -25,4 +25,5 @@ export http_proxy=http://u-MS9MdQ:Qixfk8ku@10.248.0.7:3128
 cd /data/run01/scyb683/ThunderKittens/kernels/attention/attn_h100_pk_varlen
 
 # make clean && make && 
-python benchmark.py
+python benchmark.py --qo_head 32 --kv_head 8 --d 128 --num_seqs 16 --causal
+python benchmark.py --qo_head 32 --kv_head 8 --d 128 --num_seqs 16 --no_causal

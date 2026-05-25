@@ -11,10 +11,21 @@ template<int D, int NUM_WORKERS> struct attn_fwd_layout {
     using kv_tile   = st_bf<D==64?192:128, D>;
     using qo_global = kittens::gl<bf16, -1, -1, -1, D, qo_tile>;
     using kv_global = kittens::gl<bf16, -1, -1, -1, D, kv_tile>;
-    struct globals { qo_global O, Q; kv_global K, V; };
+    struct globals {
+        qo_global O, Q;
+        kv_global K, V;
+        // cu_seqlens has shape [num_batch + 1].
+        // Self-attention assumption: Q/K/V use the same cu_seqlens.
+        int const* cu_seqlens;
+        // Actual number of varlen sequences.
+        int num_batch;
+    };
     struct input_block    { kv_tile k, v; };
     struct scratch_block  { qo_tile q[NUM_WORKERS]; };
-    struct common_state   { int batch, q_head, kv_head, seq, kv_iters; };
+    struct common_state   {
+        int batch, q_head, kv_head, seq, kv_iters;
+        int q_start, k_start, q_len, k_len, q_tile_start, kv_tile_start;
+    };
     struct consumer_state {
         rt_fl<16, qo_tile::cols> o_reg;
         col_vec<rt_fl<16, kv_tile::rows>> max_vec, norm_vec;
@@ -28,41 +39,66 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
     using layout = attn_fwd_layout<D, NUM_WORKERS>;
     __device__ static inline void common_setup(common_setup_args<layout> args) {
         int task_id = gridDim.x*args.task_iter + blockIdx.x;
-        int seq_q = (args.globals.Q.rows() + NUM_WORKERS*layout::qo_tile::rows - 1)/(NUM_WORKERS*layout::qo_tile::rows);
         const int q_heads  = args.globals.Q.depth();
         const int kv_heads = args.globals.K.depth();
         const int group_size = q_heads / kv_heads;
-        args.common.batch = task_id / (seq_q * q_heads);
-        task_id -= args.common.batch * seq_q * q_heads;
-        args.common.q_head = task_id / seq_q;
-        task_id -= args.common.q_head * seq_q;
-        args.common.seq = task_id;
-        args.common.kv_head = args.common.q_head / group_size;
-        // for causal=false:
-        // args.num_iters = args.common.batch < args.globals.Q.batch() ? (args.globals.K.rows() + layout::kv_tile::rows - 1)/(layout::kv_tile::rows) : -1;
-        // for causal=true:
-        if (args.common.batch < args.globals.Q.batch()) {
-            if constexpr (is_causal) {
-                const int q_start = args.common.seq * NUM_WORKERS * layout::qo_tile::rows;
-                const int q_end_exclusive = q_start + NUM_WORKERS * layout::qo_tile::rows;
-                int max_k_needed = q_end_exclusive - 1;
-                const int k_rows = args.globals.K.rows();
-
-                if (max_k_needed >= k_rows) {
-                    max_k_needed = k_rows - 1;
-                }
-
-                args.common.kv_iters = (max_k_needed + layout::kv_tile::rows) / layout::kv_tile::rows;
+        constexpr int Q_BLOCK_ROWS = NUM_WORKERS * layout::qo_tile::rows;
+        bool found = false;
+        int rem = task_id;
+        // potential performance bottleneck?
+        #pragma unroll 1
+        for (int b = 0; b < args.globals.num_batch; ++b) {
+            const int start = args.globals.cu_seqlens[b];
+            const int end   = args.globals.cu_seqlens[b + 1];
+            const int len   = end - start;
+            const int seq_q = len / Q_BLOCK_ROWS; // number of Q blocks for this sequence, promiss len is a multiple of Q_BLOCK_ROWS
+            const int tasks_this_batch = seq_q * q_heads;
+            if (rem < tasks_this_batch) {
+                args.common.batch = b;
+                args.common.q_head = rem / seq_q;
+                args.common.seq = rem - args.common.q_head * seq_q;
+                args.common.kv_head = args.common.q_head / group_size;
+                args.common.q_start = start;
+                args.common.k_start = start;
+                args.common.q_len = len;
+                args.common.k_len = len;
+                args.common.q_tile_start = start / layout::qo_tile::rows;
+                args.common.kv_tile_start = start / layout::kv_tile::rows;
+                found = true;
+                break;
             }
-            else {
-                args.common.kv_iters = (args.globals.K.rows() + layout::kv_tile::rows - 1) / layout::kv_tile::rows;
-            }
-            args.num_iters = args.common.kv_iters;
+
+            rem -= tasks_this_batch;
         }
-        else {
+        if (!found) {
+            args.common.batch = args.globals.num_batch;
+            args.common.q_head = 0;
+            args.common.kv_head = 0;
+            args.common.seq = 0;
+            args.common.q_start = 0;
+            args.common.k_start = 0;
+            args.common.q_len = 0;
+            args.common.k_len = 0;
+            args.common.q_tile_start = 0;
+            args.common.kv_tile_start = 0;
             args.common.kv_iters = -1;
             args.num_iters = -1;
+            return;
         }
+        if constexpr (is_causal) {
+            const int q_start = args.common.seq * NUM_WORKERS * layout::qo_tile::rows;
+            const int q_end_exclusive = q_start + NUM_WORKERS * layout::qo_tile::rows;
+            int max_k_needed = q_end_exclusive - 1;
+            const int k_rows = args.common.k_len;
+            if (max_k_needed >= k_rows) {
+                max_k_needed = k_rows - 1;
+            }
+            args.common.kv_iters = (max_k_needed + layout::kv_tile::rows) / layout::kv_tile::rows;
+        }
+        else {
+            args.common.kv_iters = (args.common.k_len + layout::kv_tile::rows - 1) / layout::kv_tile::rows;
+        }
+        args.num_iters = args.common.kv_iters;
     }
     struct producer {
         __device__ static inline void setup(producer_setup_args<layout> args) {
@@ -71,8 +107,8 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
         __device__ static inline void load(producer_load_args<layout> args) {
             if(warpgroup::warpid() == 0) {
                 warp::tma::expect(args.inputs_arrived, args.input);
-                warp::tma::load_async(args.input.k, args.globals.K, {args.common.batch, args.common.kv_head, args.iter, 0}, args.inputs_arrived);
-                warp::tma::load_async(args.input.v, args.globals.V, {args.common.batch, args.common.kv_head, args.iter, 0}, args.inputs_arrived);
+                warp::tma::load_async(args.input.k, args.globals.K, {0, args.common.kv_head, args.common.kv_tile_start + args.iter, 0}, args.inputs_arrived);
+                warp::tma::load_async(args.input.v, args.globals.V, {0, args.common.kv_head, args.common.kv_tile_start + args.iter, 0}, args.inputs_arrived);
             }
             else if(laneid() == 0) arrive(args.inputs_arrived);
         }
@@ -80,9 +116,9 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
     struct consumer {
         __device__ static inline void setup(consumer_setup_args<layout> args) {
             warpgroup::consumer_registers<NUM_WORKERS>();
-            if((args.common.seq*NUM_WORKERS + warpgroup::groupid())*layout::qo_tile::rows < args.globals.Q.rows()) // out of bounds?
-                warpgroup::load(args.scratch.q[warpgroup::groupid()], args.globals.Q,
-                                {args.common.batch, args.common.q_head, args.common.seq*NUM_WORKERS+warpgroup::groupid(), 0});
+            const int local_q_tile = args.common.seq * NUM_WORKERS + warpgroup::groupid();
+            if (local_q_tile * layout::qo_tile::rows < args.common.q_len)
+                warpgroup::load(args.scratch.q[warpgroup::groupid()], args.globals.Q, {0, args.common.q_head, args.common.q_tile_start + local_q_tile, 0});
             args.state.o_reg = 0.f;
             args.state.norm_vec = 0.f;
             args.state.max_vec = base_types::constants<float>::neg_infty();
@@ -118,7 +154,7 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
                 }
             }
             // softmax
-            warp::right_fill(args.state.att_block, args.state.att_block, args.globals.K.rows() - args.iter*layout::kv_tile::rows, base_types::constants<float>::neg_infty());
+            warp::right_fill(args.state.att_block, args.state.att_block, args.common.k_len - args.iter * layout::kv_tile::rows, base_types::constants<float>::neg_infty());
             args.state.max_vec = warp::max<axis::COL>(args.state.att_block, args.state.max_vec); // accumulate onto the max_vec
             args.state.max_vec_scaled = args.state.max_vec * TEMPERATURE_SCALE;
             args.state.att_block = warp::exp2((args.state.att_block*TEMPERATURE_SCALE) - args.state.max_vec_scaled);
@@ -133,13 +169,14 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
             if(laneid() == 0) arrive(args.inputs_finished); // done!
         }
         __device__ static inline void finish(consumer_finish_args<layout> args) {
-            if((args.common.seq*NUM_WORKERS+warpgroup::groupid())*64 < args.globals.Q.rows()) { // out of bounds?
+            const int local_q_tile = args.common.seq * NUM_WORKERS + warpgroup::groupid();
+            if(local_q_tile * layout::qo_tile::rows < args.common.q_len) { // out of bounds?
                 args.state.o_reg /= args.state.norm_vec;
                 auto &o_smem = reinterpret_cast<typename layout::qo_tile&>(args.scratch.q[warpgroup::groupid()]);
                 warpgroup::store(o_smem, args.state.o_reg);
                 warpgroup::sync(warpgroup::groupid());
                 if(warpgroup::warpid() == 0)
-                    warp::tma::store_async(args.globals.O, o_smem, {args.common.batch, args.common.q_head, args.common.seq*NUM_WORKERS+warpgroup::groupid(), 0});
+                    warp::tma::store_async(args.globals.O, o_smem, {0, args.common.q_head, args.common.q_tile_start + local_q_tile, 0});
                 warp::tma::store_async_read_wait();
             }
             __syncwarp();
@@ -156,7 +193,7 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
 #include <iostream>
 
 std::vector<at::Tensor> 
-attention_forward(at::Tensor q, at::Tensor k, at::Tensor v, bool causal)
+attention_forward(at::Tensor q, at::Tensor k, at::Tensor v, at::Tensor cu_seqlens, bool causal)
 {
     CHECK_INPUT(q);
     CHECK_INPUT(k);
@@ -168,6 +205,11 @@ attention_forward(at::Tensor q, at::Tensor k, at::Tensor v, bool causal)
     auto is_causal = causal;
     auto qo_heads = q.size(1);
     auto kv_heads = k.size(1);
+    int num_seqs = (int)cu_seqlens.size(0) - 1;
+    TORCH_CHECK(batch == 1, "Batch size - idx 0 - must be 1 for varlen attention");
+    TORCH_CHECK(head_dim == 64 || head_dim == 128, "Head dimension - idx 3 - must be either 64 or 128");
+    TORCH_CHECK(seq_len % 384 == 0, "Sequence length - idx 2 - must be a multiple of 384");
+    TORCH_CHECK(cu_seqlens.dim() == 1, "cu_seqlens must be 1D");
 
     // check to see that these dimensions match for all inputs
     TORCH_CHECK(q.size(0) == batch, "Q batch dimension - idx 0 - must match for all inputs");
@@ -193,10 +235,12 @@ attention_forward(at::Tensor q, at::Tensor k, at::Tensor v, bool causal)
     c10::BFloat16* q_ptr = q.data_ptr<c10::BFloat16>();
     c10::BFloat16* k_ptr = k.data_ptr<c10::BFloat16>();
     c10::BFloat16* v_ptr = v.data_ptr<c10::BFloat16>();
+    int32_t* cu_seqlens_ptr = cu_seqlens.data_ptr<int32_t>();
 
     bf16*  d_q = reinterpret_cast<bf16*>(q_ptr);
     bf16*  d_k = reinterpret_cast<bf16*>(k_ptr);
     bf16*  d_v = reinterpret_cast<bf16*>(v_ptr);
+    int*   d_cu_seqlens = reinterpret_cast<int*>(cu_seqlens_ptr);
     
     // for the returned outputs
     at::Tensor o     = at::empty({static_cast<const uint>(batch), 
@@ -228,7 +272,7 @@ attention_forward(at::Tensor q, at::Tensor k, at::Tensor v, bool causal)
         typename layout::kv_global Kg(d_k, (size_t)batch, (size_t)kv_heads, (size_t)seq_len, nullptr);
         typename layout::kv_global Vg(d_v, (size_t)batch, (size_t)kv_heads, (size_t)seq_len, nullptr);
         typename layout::qo_global Og(d_o, (size_t)batch, (size_t)qo_heads, (size_t)seq_len, nullptr);
-        typename layout::globals globals = {Og, Qg, Kg, Vg};
+        typename layout::globals globals = {Og, Qg, Kg, Vg, d_cu_seqlens, num_seqs};
 
         unsigned long mem_size = kittens::MAX_SHARED_MEMORY - 2000;
         cudaFuncSetAttribute(
