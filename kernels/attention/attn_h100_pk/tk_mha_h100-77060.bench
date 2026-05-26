@@ -1,0 +1,560 @@
+Successfully imported flash_attention
+Successfully imported flash_attn_interface
+Benchmarking the kernels...
+Config: b=1, qo_head=32, kv_head=8, d=128, fwd_only=True
+================================================ ATTENTION ================================================
+Method: attn_fwd_PT_c=t
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 7.64 TFLOPS, Time: 632.0723 us and FLOPS: 4831838208.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 7.69 TFLOPS, Time: 2514.4806 us and FLOPS: 19327352832.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 4.24 TFLOPS, Time: 18237.9941 us and FLOPS: 77309411328.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 3.46 TFLOPS, Time: 89377.4408 us and FLOPS: 309237645312.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 3.58 TFLOPS, Time: 345634.1919 us and FLOPS: 1236950581248.00
+Method: attn_fwd_FA2_c=t
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 83.72 TFLOPS, Time: 57.7165 us and FLOPS: 4831838208.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 161.48 TFLOPS, Time: 119.6883 us and FLOPS: 19327352832.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 239.73 TFLOPS, Time: 322.4851 us and FLOPS: 77309411328.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 300.07 TFLOPS, Time: 1030.5357 us and FLOPS: 309237645312.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 334.48 TFLOPS, Time: 3698.1171 us and FLOPS: 1236950581248.00
+Method: attn_fwd_FA3_c=t
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 48.41 TFLOPS, Time: 99.8035 us and FLOPS: 4831838208.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 195.50 TFLOPS, Time: 98.8627 us and FLOPS: 19327352832.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 427.07 TFLOPS, Time: 181.0234 us and FLOPS: 77309411328.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 634.51 TFLOPS, Time: 487.3619 us and FLOPS: 309237645312.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 684.59 TFLOPS, Time: 1806.8435 us and FLOPS: 1236950581248.00
+Method: attn_fwd_TK_c=t
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 104.18 TFLOPS, Time: 46.3802 us and FLOPS: 4831838208.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 239.17 TFLOPS, Time: 80.8090 us and FLOPS: 19327352832.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 400.00 TFLOPS, Time: 193.2717 us and FLOPS: 77309411328.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 557.89 TFLOPS, Time: 554.2989 us and FLOPS: 309237645312.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 595.57 TFLOPS, Time: 2076.9017 us and FLOPS: 1236950581248.00
+Method: attn_fwd_PT_c=f
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 72.75 TFLOPS, Time: 132.8256 us and FLOPS: 9663676416.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 96.02 TFLOPS, Time: 402.5760 us and FLOPS: 38654705664.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 88.63 TFLOPS, Time: 1744.5395 us and FLOPS: 154618822656.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 102.16 TFLOPS, Time: 6053.7587 us and FLOPS: 618475290624.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 125.50 TFLOPS, Time: 19712.9922 us and FLOPS: 2473901162496.00
+Method: attn_fwd_FA2_c=f
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 169.00 TFLOPS, Time: 57.1827 us and FLOPS: 9663676416.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 279.97 TFLOPS, Time: 138.0678 us and FLOPS: 38654705664.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 334.04 TFLOPS, Time: 462.8691 us and FLOPS: 154618822656.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 351.10 TFLOPS, Time: 1761.5603 us and FLOPS: 618475290624.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 346.01 TFLOPS, Time: 7149.7613 us and FLOPS: 2473901162496.00
+Method: attn_fwd_FA3_c=f
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 107.65 TFLOPS, Time: 89.7690 us and FLOPS: 9663676416.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 334.84 TFLOPS, Time: 115.4413 us and FLOPS: 38654705664.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 554.26 TFLOPS, Time: 278.9664 us and FLOPS: 154618822656.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 688.33 TFLOPS, Time: 898.5210 us and FLOPS: 618475290624.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 688.03 TFLOPS, Time: 3595.6262 us and FLOPS: 2473901162496.00
+Method: attn_fwd_TK_c=f
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 211.35 TFLOPS, Time: 45.7235 us and FLOPS: 9663676416.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 385.15 TFLOPS, Time: 100.3622 us and FLOPS: 38654705664.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 514.44 TFLOPS, Time: 300.5581 us and FLOPS: 154618822656.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 612.39 TFLOPS, Time: 1009.9334 us and FLOPS: 618475290624.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 623.19 TFLOPS, Time: 3969.7568 us and FLOPS: 2473901162496.00
+       attn_fwd_PT_c=t  attn_fwd_FA2_c=t  attn_fwd_FA3_c=t  attn_fwd_TK_c=t  attn_fwd_PT_c=f  attn_fwd_FA2_c=f  attn_fwd_FA3_c=f  attn_fwd_TK_c=f
+768           7.644439         83.716786         48.413505       104.178990        72.754622        168.996446        107.650533       211.350228
+1536          7.686419        161.480693        195.496875       239.173388        96.018405        279.968932        334.843010       385.151882
+3072          4.238921        239.730163        427.068704       400.003822        88.630163        334.044367        554.256069       514.439082
+6144          3.459907        300.074662        634.513353       557.889716       102.163849        351.095153        688.325945       612.392129
+12288         3.578785        334.481181        684.591980       595.574915       125.495974        346.011715        688.030681       623.187081
+Successfully imported flash_attention
+Successfully imported flash_attn_interface
+Benchmarking the kernels...
+Config: b=1, qo_head=32, kv_head=32, d=128, fwd_only=True
+================================================ ATTENTION ================================================
+Method: attn_fwd_PT_c=t
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 8.21 TFLOPS, Time: 588.5971 us and FLOPS: 4831838208.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 8.99 TFLOPS, Time: 2149.3530 us and FLOPS: 19327352832.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 3.62 TFLOPS, Time: 21329.7294 us and FLOPS: 77309411328.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 3.47 TFLOPS, Time: 89177.1512 us and FLOPS: 309237645312.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 3.51 TFLOPS, Time: 352197.2394 us and FLOPS: 1236950581248.00
+Method: attn_fwd_FA2_c=t
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 84.18 TFLOPS, Time: 57.3965 us and FLOPS: 4831838208.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 156.96 TFLOPS, Time: 123.1360 us and FLOPS: 19327352832.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 237.14 TFLOPS, Time: 326.0051 us and FLOPS: 77309411328.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 298.22 TFLOPS, Time: 1036.9414 us and FLOPS: 309237645312.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 334.50 TFLOPS, Time: 3697.8598 us and FLOPS: 1236950581248.00
+Method: attn_fwd_FA3_c=t
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 48.90 TFLOPS, Time: 98.8154 us and FLOPS: 4831838208.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 194.51 TFLOPS, Time: 99.3658 us and FLOPS: 19327352832.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 420.26 TFLOPS, Time: 183.9546 us and FLOPS: 77309411328.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 628.09 TFLOPS, Time: 492.3494 us and FLOPS: 309237645312.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 687.23 TFLOPS, Time: 1799.8970 us and FLOPS: 1236950581248.00
+Method: attn_fwd_TK_c=t
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 102.06 TFLOPS, Time: 47.3453 us and FLOPS: 4831838208.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 226.43 TFLOPS, Time: 85.3568 us and FLOPS: 19327352832.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 402.48 TFLOPS, Time: 192.0832 us and FLOPS: 77309411328.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 510.69 TFLOPS, Time: 605.5328 us and FLOPS: 309237645312.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 578.26 TFLOPS, Time: 2139.0803 us and FLOPS: 1236950581248.00
+Method: attn_fwd_PT_c=f
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 87.13 TFLOPS, Time: 110.9075 us and FLOPS: 9663676416.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 101.76 TFLOPS, Time: 379.8733 us and FLOPS: 38654705664.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 91.11 TFLOPS, Time: 1697.0720 us and FLOPS: 154618822656.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 103.73 TFLOPS, Time: 5962.3047 us and FLOPS: 618475290624.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 127.00 TFLOPS, Time: 19479.5059 us and FLOPS: 2473901162496.00
+Method: attn_fwd_FA2_c=f
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 169.50 TFLOPS, Time: 57.0125 us and FLOPS: 9663676416.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 273.52 TFLOPS, Time: 141.3222 us and FLOPS: 38654705664.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 334.93 TFLOPS, Time: 461.6474 us and FLOPS: 154618822656.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 353.37 TFLOPS, Time: 1750.2400 us and FLOPS: 618475290624.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 344.48 TFLOPS, Time: 7181.4566 us and FLOPS: 2473901162496.00
+Method: attn_fwd_FA3_c=f
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 108.02 TFLOPS, Time: 89.4605 us and FLOPS: 9663676416.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 332.57 TFLOPS, Time: 116.2291 us and FLOPS: 38654705664.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 556.81 TFLOPS, Time: 277.6877 us and FLOPS: 154618822656.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 679.66 TFLOPS, Time: 909.9821 us and FLOPS: 618475290624.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 688.96 TFLOPS, Time: 3590.7693 us and FLOPS: 2473901162496.00
+Method: attn_fwd_TK_c=f
+Sequence Length: 768
+b=1, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 209.78 TFLOPS, Time: 46.0659 us and FLOPS: 9663676416.00
+Sequence Length: 1536
+b=1, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 400.24 TFLOPS, Time: 96.5792 us and FLOPS: 38654705664.00
+Sequence Length: 3072
+b=1, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 552.37 TFLOPS, Time: 279.9168 us and FLOPS: 154618822656.00
+Sequence Length: 6144
+b=1, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 619.32 TFLOPS, Time: 998.6419 us and FLOPS: 618475290624.00
+Sequence Length: 12288
+b=1, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 627.66 TFLOPS, Time: 3941.4829 us and FLOPS: 2473901162496.00
+       attn_fwd_PT_c=t  attn_fwd_FA2_c=t  attn_fwd_FA3_c=t  attn_fwd_TK_c=t  attn_fwd_PT_c=f  attn_fwd_FA2_c=f  attn_fwd_FA3_c=f  attn_fwd_TK_c=f
+768           8.209076         84.183528         48.897643       102.055331        87.132743        169.501070        108.021736       209.779299
+1536          8.992173        156.959401        194.507170       226.430149       101.756843        273.521746        332.573332       400.238412
+3072          3.624491        237.141709        420.263630       402.478775        91.109171        334.928424        556.808361       552.374214
+6144          3.467678        298.220934        628.085706       510.686859       103.730910        353.365991        679.656563       619.316372
+12288         3.512096        334.504452        687.234107       578.262800       127.000201        344.484592        688.961325       627.657469
+Successfully imported flash_attention
+Successfully imported flash_attn_interface
+Benchmarking the kernels...
+Config: b=16, qo_head=32, kv_head=8, d=128, fwd_only=True
+================================================ ATTENTION ================================================
+Method: attn_fwd_PT_c=t
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 31.04 TFLOPS, Time: 2490.4538 us and FLOPS: 77309411328.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 31.20 TFLOPS, Time: 9910.5287 us and FLOPS: 309237645312.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 23.54 TFLOPS, Time: 52551.3747 us and FLOPS: 1236950581248.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 23.36 TFLOPS, Time: 211835.1004 us and FLOPS: 4947802324992.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=8, dv=128
+Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 127.29 GiB is free. Including non-PyTorch memory, this process has 12.50 GiB memory in use. Of the allocated memory 6.78 GiB is allocated by PyTorch, and 5.06 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+Method attn_fwd_PT_c=t -- Efficiency: -19791.21 TFLOPS, Time: -1000.0000 us and FLOPS: 19791209299968.00
+Method: attn_fwd_FA2_c=t
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 228.85 TFLOPS, Time: 337.8125 us and FLOPS: 77309411328.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 295.54 TFLOPS, Time: 1046.3578 us and FLOPS: 309237645312.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 329.77 TFLOPS, Time: 3750.9683 us and FLOPS: 1236950581248.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 335.19 TFLOPS, Time: 14761.2749 us and FLOPS: 4947802324992.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 345.94 TFLOPS, Time: 57209.5959 us and FLOPS: 19791209299968.00
+Method: attn_fwd_FA3_c=t
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 341.70 TFLOPS, Time: 226.2496 us and FLOPS: 77309411328.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 546.61 TFLOPS, Time: 565.7389 us and FLOPS: 309237645312.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 657.45 TFLOPS, Time: 1881.4362 us and FLOPS: 1236950581248.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 674.60 TFLOPS, Time: 7334.4640 us and FLOPS: 4947802324992.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 675.43 TFLOPS, Time: 29301.5629 us and FLOPS: 19791209299968.00
+Method: attn_fwd_TK_c=t
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 216.59 TFLOPS, Time: 356.9318 us and FLOPS: 77309411328.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 371.52 TFLOPS, Time: 832.3629 us and FLOPS: 309237645312.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 495.33 TFLOPS, Time: 2497.2384 us and FLOPS: 1236950581248.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 557.41 TFLOPS, Time: 8876.4608 us and FLOPS: 4947802324992.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 572.24 TFLOPS, Time: 34585.6770 us and FLOPS: 19791209299968.00
+Method: attn_fwd_PT_c=f
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 106.51 TFLOPS, Time: 1451.7370 us and FLOPS: 154618822656.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 108.75 TFLOPS, Time: 5687.1354 us and FLOPS: 618475290624.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 91.23 TFLOPS, Time: 27117.6968 us and FLOPS: 2473901162496.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 101.32 TFLOPS, Time: 97663.2832 us and FLOPS: 9895604649984.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=8, dv=128
+Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 125.79 GiB is free. Including non-PyTorch memory, this process has 14.01 GiB memory in use. Of the allocated memory 6.78 GiB is allocated by PyTorch, and 6.56 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+Method attn_fwd_PT_c=f -- Efficiency: -39582.42 TFLOPS, Time: -1000.0000 us and FLOPS: 39582418599936.00
+Method: attn_fwd_FA2_c=f
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 319.42 TFLOPS, Time: 484.0576 us and FLOPS: 154618822656.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 351.54 TFLOPS, Time: 1759.3555 us and FLOPS: 618475290624.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 338.07 TFLOPS, Time: 7317.6992 us and FLOPS: 2473901162496.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 350.43 TFLOPS, Time: 28238.7809 us and FLOPS: 9895604649984.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 354.60 TFLOPS, Time: 111626.1443 us and FLOPS: 39582418599936.00
+Method: attn_fwd_FA3_c=f
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 473.59 TFLOPS, Time: 326.4832 us and FLOPS: 154618822656.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 657.37 TFLOPS, Time: 940.8301 us and FLOPS: 618475290624.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 671.12 TFLOPS, Time: 3686.2227 us and FLOPS: 2473901162496.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 694.04 TFLOPS, Time: 14257.9687 us and FLOPS: 9895604649984.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 692.54 TFLOPS, Time: 57155.0521 us and FLOPS: 39582418599936.00
+Method: attn_fwd_TK_c=f
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 466.01 TFLOPS, Time: 331.7933 us and FLOPS: 154618822656.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 601.53 TFLOPS, Time: 1028.1741 us and FLOPS: 618475290624.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 622.36 TFLOPS, Time: 3975.0074 us and FLOPS: 2473901162496.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 631.57 TFLOPS, Time: 15668.3699 us and FLOPS: 9895604649984.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=8, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 638.57 TFLOPS, Time: 61985.9924 us and FLOPS: 39582418599936.00
+      attn_fwd_PT_c=t  attn_fwd_FA2_c=t  attn_fwd_FA3_c=t  attn_fwd_TK_c=t attn_fwd_PT_c=f  attn_fwd_FA2_c=f  attn_fwd_FA3_c=f  attn_fwd_TK_c=f
+768           31.0423        228.853034        341.699658       216.594326      106.506087        319.422363        473.588910       466.009506
+1536        31.202941        295.537203        546.608442       371.517822      108.749881        351.535140        657.371938       601.527796
+3072         23.53793        329.768337        657.450201       495.327390       91.228292        338.070902        671.120913       622.363921
+6144        23.356858        335.188008        674.596303       557.407106      101.323694        350.426057        694.040287       631.565677
+12288             OOM        345.942127        675.431865       572.237153             OOM        354.598099        692.544528       638.570378
+Successfully imported flash_attention
+Successfully imported flash_attn_interface
+Benchmarking the kernels...
+Config: b=16, qo_head=32, kv_head=32, d=128, fwd_only=True
+================================================ ATTENTION ================================================
+Method: attn_fwd_PT_c=t
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 33.01 TFLOPS, Time: 2341.8816 us and FLOPS: 77309411328.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 31.69 TFLOPS, Time: 9759.3056 us and FLOPS: 309237645312.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 22.77 TFLOPS, Time: 54331.9941 us and FLOPS: 1236950581248.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=t -- Efficiency: 23.21 TFLOPS, Time: 213142.7097 us and FLOPS: 4947802324992.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=32, dv=128
+Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 127.85 GiB is free. Including non-PyTorch memory, this process has 11.94 GiB memory in use. Of the allocated memory 6.03 GiB is allocated by PyTorch, and 5.25 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+Method attn_fwd_PT_c=t -- Efficiency: -19791.21 TFLOPS, Time: -1000.0000 us and FLOPS: 19791209299968.00
+Method: attn_fwd_FA2_c=t
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 226.34 TFLOPS, Time: 341.5642 us and FLOPS: 77309411328.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 297.20 TFLOPS, Time: 1040.4864 us and FLOPS: 309237645312.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 331.81 TFLOPS, Time: 3727.8957 us and FLOPS: 1236950581248.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 338.22 TFLOPS, Time: 14628.8365 us and FLOPS: 4947802324992.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=t -- Efficiency: 346.20 TFLOPS, Time: 57167.1700 us and FLOPS: 19791209299968.00
+Method: attn_fwd_FA3_c=t
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 327.59 TFLOPS, Time: 235.9923 us and FLOPS: 77309411328.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 529.94 TFLOPS, Time: 583.5379 us and FLOPS: 309237645312.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 647.17 TFLOPS, Time: 1911.3344 us and FLOPS: 1236950581248.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 691.17 TFLOPS, Time: 7158.6105 us and FLOPS: 4947802324992.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=t -- Efficiency: 680.16 TFLOPS, Time: 29097.8656 us and FLOPS: 19791209299968.00
+Method: attn_fwd_TK_c=t
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 222.47 TFLOPS, Time: 347.5104 us and FLOPS: 77309411328.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 365.41 TFLOPS, Time: 846.2874 us and FLOPS: 309237645312.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 477.31 TFLOPS, Time: 2591.5232 us and FLOPS: 1236950581248.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 528.82 TFLOPS, Time: 9356.3277 us and FLOPS: 4947802324992.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=t -- Efficiency: 540.64 TFLOPS, Time: 36606.8742 us and FLOPS: 19791209299968.00
+Method: attn_fwd_PT_c=f
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 124.29 TFLOPS, Time: 1243.9962 us and FLOPS: 154618822656.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 117.22 TFLOPS, Time: 5276.3424 us and FLOPS: 618475290624.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 94.08 TFLOPS, Time: 26294.3418 us and FLOPS: 2473901162496.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_PT_c=f -- Efficiency: 102.75 TFLOPS, Time: 96307.1495 us and FLOPS: 9895604649984.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=32, dv=128
+Error: CUDA out of memory. Tried to allocate 144.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 126.35 GiB is free. Including non-PyTorch memory, this process has 13.44 GiB memory in use. Of the allocated memory 6.03 GiB is allocated by PyTorch, and 6.75 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+Method attn_fwd_PT_c=f -- Efficiency: -39582.42 TFLOPS, Time: -1000.0000 us and FLOPS: 39582418599936.00
+Method: attn_fwd_FA2_c=f
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 316.66 TFLOPS, Time: 488.2739 us and FLOPS: 154618822656.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 354.31 TFLOPS, Time: 1745.5968 us and FLOPS: 618475290624.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 341.60 TFLOPS, Time: 7242.0922 us and FLOPS: 2473901162496.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 354.42 TFLOPS, Time: 27920.5274 us and FLOPS: 9895604649984.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA2_c=f -- Efficiency: 355.27 TFLOPS, Time: 111414.5584 us and FLOPS: 39582418599936.00
+Method: attn_fwd_FA3_c=f
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 467.63 TFLOPS, Time: 330.6438 us and FLOPS: 154618822656.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 654.01 TFLOPS, Time: 945.6627 us and FLOPS: 618475290624.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 688.70 TFLOPS, Time: 3592.1498 us and FLOPS: 2473901162496.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 698.88 TFLOPS, Time: 14159.2122 us and FLOPS: 9895604649984.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_FA3_c=f -- Efficiency: 696.30 TFLOPS, Time: 56847.1667 us and FLOPS: 39582418599936.00
+Method: attn_fwd_TK_c=f
+Sequence Length: 768
+b=16, n=768, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 479.04 TFLOPS, Time: 322.7654 us and FLOPS: 154618822656.00
+Sequence Length: 1536
+b=16, n=1536, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 600.97 TFLOPS, Time: 1029.1238 us and FLOPS: 618475290624.00
+Sequence Length: 3072
+b=16, n=3072, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 629.87 TFLOPS, Time: 3927.6230 us and FLOPS: 2473901162496.00
+Sequence Length: 6144
+b=16, n=6144, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 627.71 TFLOPS, Time: 15764.5292 us and FLOPS: 9895604649984.00
+Sequence Length: 12288
+b=16, n=12288, qo_head=32, kv_head=32, dv=128
+Method attn_fwd_TK_c=f -- Efficiency: 612.76 TFLOPS, Time: 64596.9221 us and FLOPS: 39582418599936.00
+      attn_fwd_PT_c=t  attn_fwd_FA2_c=t  attn_fwd_FA3_c=t  attn_fwd_TK_c=t attn_fwd_PT_c=f  attn_fwd_FA2_c=f  attn_fwd_FA3_c=f  attn_fwd_TK_c=f
+768         33.011665        226.339354        327.592913       222.466469      124.292042        316.664103        467.629528       479.043922
+1536        31.686439        297.204887        529.935816       365.405014      117.216671        354.305926        654.012553       600.972657
+3072        22.766523        331.809334        647.165967       477.306388       94.084924        341.600343        688.696555       629.872352
+6144        23.213566        338.222546        691.167971       528.818835      102.750468        354.420405        698.881020       627.713298
+12288             OOM        346.198864        680.160174       540.641880             OOM        355.271512        696.295363       612.760134

@@ -42,6 +42,11 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
         const int q_heads  = args.globals.Q.depth();
         const int kv_heads = args.globals.K.depth();
         const int group_size = q_heads / kv_heads;
+        //=======================================================================================================
+        // TODO: potential performance bottleneck? 
+        // 1. need to keep same with padding baseline when batch_size=1
+        // 2. then try an atomicAdd version + precompute idx->task mapping, or with idx swizzling to balance load
+        //=======================================================================================================
         constexpr int Q_BLOCK_ROWS = NUM_WORKERS * layout::qo_tile::rows;
         bool found = false;
         int rem = task_id;
@@ -102,20 +107,24 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
     }
     struct producer {
         __device__ static inline void setup(producer_setup_args<layout> args) {
-            warpgroup::producer_registers();
+            // warpgroup::producer_registers();
         }
         __device__ static inline void load(producer_load_args<layout> args) {
             if(warpgroup::warpid() == 0) {
-                warp::tma::expect(args.inputs_arrived, args.input);
-                warp::tma::load_async(args.input.k, args.globals.K, {0, args.common.kv_head, args.common.kv_tile_start + args.iter, 0}, args.inputs_arrived);
-                warp::tma::load_async(args.input.v, args.globals.V, {0, args.common.kv_head, args.common.kv_tile_start + args.iter, 0}, args.inputs_arrived);
+                warp::tma::expect(args.inputs_arrived_k, args.input.k);
+                warp::tma::load_async(args.input.k, args.globals.K, {0, args.common.kv_head, args.common.q_tile_start + args.iter, 0}, args.inputs_arrived_k);
+                warp::tma::expect(args.inputs_arrived_v, args.input.v);
+                warp::tma::load_async(args.input.v, args.globals.V, {0, args.common.kv_head, args.common.q_tile_start + args.iter, 0}, args.inputs_arrived_v);
             }
-            else if(laneid() == 0) arrive(args.inputs_arrived);
+            else if(laneid() == 0) {
+                arrive(args.inputs_arrived_k);
+                arrive(args.inputs_arrived_v);
+            }
         }
     };
     struct consumer {
         __device__ static inline void setup(consumer_setup_args<layout> args) {
-            warpgroup::consumer_registers<NUM_WORKERS>();
+            // warpgroup::consumer_registers<NUM_WORKERS>();
             const int local_q_tile = args.common.seq * NUM_WORKERS + warpgroup::groupid();
             if (local_q_tile * layout::qo_tile::rows < args.common.q_len)
                 warpgroup::load(args.scratch.q[warpgroup::groupid()], args.globals.Q, {0, args.common.q_head, args.common.q_tile_start + local_q_tile, 0});
@@ -124,7 +133,8 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
             args.state.max_vec = base_types::constants<float>::neg_infty();
             warpgroup::sync(warpgroup::groupid());
         }
-        __device__ static inline void compute(consumer_compute_args<layout> args) {
+        __device__ static inline void compute(consumer_compute_args<layout> args, uint32_t& semaphore_bitfield, int& input_ring) {
+            wait(args.inputs_arrived_k, get_phasebit<0>(semaphore_bitfield, input_ring)); // wait for memory to arrive, phase changes at half the rate of the ring
             constexpr float TEMPERATURE_SCALE = (D == 128) ? 0.08838834764f*1.44269504089f : 0.125f*1.44269504089f;
             // A = Q @ K.T
             warpgroup::mm<transpose::N, transpose::T>(args.state.att_block, args.scratch.q[warpgroup::groupid()], args.input.k);
@@ -164,6 +174,8 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
             args.state.o_reg *= args.state.max_vec_last_scaled; // normalize o_reg before mma
             args.state.att_block_mma = args.state.att_block; // convert to bf16 for mma
             // O += A @ V
+            wait(args.inputs_arrived_v, get_phasebit<0>(semaphore_bitfield, input_ring)); // wait for memory to arrive, phase changes at half the rate of the ring
+            update_phasebit<0>(semaphore_bitfield, input_ring);
             warpgroup::mma<transpose::N, transpose::N>(args.state.o_reg, args.state.att_block_mma, args.input.v);
             warpgroup::mma_async_wait();
             if(laneid() == 0) arrive(args.inputs_finished); // done!

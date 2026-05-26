@@ -99,16 +99,18 @@ void kernel(const __grid_constant__ typename lcft::layout::globals globals) {
     }
 
     // Initialize semaphores. This is constant for all two-stage producer-consumer kernels.
-    __shared__ kittens::semaphore inputs_arrived[INPUT_PIPE_STAGES], inputs_finished[INPUT_PIPE_STAGES];
+    __shared__ kittens::semaphore inputs_arrived_k[INPUT_PIPE_STAGES], inputs_arrived_v[INPUT_PIPE_STAGES], inputs_finished[INPUT_PIPE_STAGES];
     __shared__ kittens::semaphore finish_finished;
     uint32_t semaphore_bitfield = 0xFFFF0000; // ***_finished phase bits start as 1s, ***_arrived phase bits start as 0s
     common_state common;
 
     if(warpid() >= NUM_CONSUMER_WARPS) { // code path for producer warps
+        warpgroup::producer_registers();
         using producers = group<NUM_PRODUCER_WARPS>;
         if (warpid() == NUM_CONSUMER_WARPS) { // a single warp (in fact a single thread) does these.
             for(int i = 0; i < INPUT_PIPE_STAGES; i++) {
-                init_semaphore(inputs_arrived[i], detail::PRODUCER_BARRIER_ARRIVALS_v<lcft>, 0); // needs to wait on each producer warp
+                init_semaphore(inputs_arrived_k[i], detail::PRODUCER_BARRIER_ARRIVALS_v<lcft>, 0); // needs to wait on each producer warp
+                init_semaphore(inputs_arrived_v[i], detail::PRODUCER_BARRIER_ARRIVALS_v<lcft>, 0); // needs to wait on each producer warp
                 init_semaphore(inputs_finished[i], detail::CONSUMER_BARRIER_ARRIVALS_v<lcft>, 0); // needs to wait on one thread from each consumer warp
             }
             init_semaphore(finish_finished, detail::CONSUMER_BARRIER_ARRIVALS_v<lcft>, 0); // consumer warps must say they are done with the finish block
@@ -132,20 +134,21 @@ void kernel(const __grid_constant__ typename lcft::layout::globals globals) {
             for(load_iter = 0; load_iter < SAFE_STAGES_BETWEEN_BLOCKS && load_iter<num_iters; load_iter++) { // fill the pipeline
                 wait(inputs_finished[input_ring], get_phasebit<1>(semaphore_bitfield, input_ring));
                 update_phasebit<1>(semaphore_bitfield, input_ring);
-                lcft::producer::load({p_state, *input_smem[input_ring], inputs_arrived[input_ring], load_iter, unif});
+                lcft::producer::load({p_state, *input_smem[input_ring], inputs_arrived_k[input_ring], inputs_arrived_v[input_ring], load_iter, unif});
                 input_ring=ring_advance<INPUT_PIPE_STAGES>(input_ring);
             }
             wait(finish_finished, (task_iter%2)^1); // wait for consumer to finish their finish stage before we can do the rest.
             for(; load_iter<num_iters; load_iter++) { // fill the pipeline
                 wait(inputs_finished[input_ring], get_phasebit<1>(semaphore_bitfield, input_ring));
                 update_phasebit<1>(semaphore_bitfield, input_ring);
-                lcft::producer::load({p_state, *input_smem[input_ring], inputs_arrived[input_ring], load_iter, unif});
+                lcft::producer::load({p_state, *input_smem[input_ring], inputs_arrived_k[input_ring], inputs_arrived_v[input_ring], load_iter, unif});
                 input_ring=ring_advance<INPUT_PIPE_STAGES>(input_ring);
             }
             producers::sync(13); // producer warps must finish before consumer warps can proceed
         } // task iter loop
     } // producer warpgroup
     else { // code path for consumer warps
+        warpgroup::consumer_registers<NUM_CONSUMER_WARPS / 4>();
         using consumers = group<NUM_CONSUMER_WARPS>;
         // all warps must arrive here, confirming semaphore initialization is visible to all threads.
         if constexpr (detail::CLUSTER_BLOCKS_v<lcft> > 1) everyone::tma::cluster::sync();
@@ -166,9 +169,7 @@ void kernel(const __grid_constant__ typename lcft::layout::globals globals) {
             #pragma unroll CONSUMER_UNROLL_VALUE
 #endif
             for(int it = 0; it < num_iters; it++) {
-                wait(inputs_arrived[input_ring], get_phasebit<0>(semaphore_bitfield, input_ring)); // wait for memory to arrive, phase changes at half the rate of the ring
-                update_phasebit<0>(semaphore_bitfield, input_ring);
-                lcft::consumer::compute({c_state, *input_smem[input_ring], inputs_finished[input_ring], it, unif});
+                lcft::consumer::compute({c_state, *input_smem[input_ring], inputs_arrived_k[input_ring], inputs_arrived_v[input_ring], inputs_finished[input_ring], it, unif}, semaphore_bitfield, input_ring);
                 input_ring=ring_advance<INPUT_PIPE_STAGES>(input_ring);
             } // work loop
             consumers::sync(14); // cannot overwrite finish block until all consumer warps are done.

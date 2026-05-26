@@ -48,7 +48,7 @@ def make_varlen_inputs(seqlens, qo_heads, kv_heads, d, dtype=torch.bfloat16):
     return q, k, v, cu_seqlens
 
 
-def bench_tk(q, k, v, cu_seqlens, causal, num_warmup=10, num_iters=10):
+def bench_tk(q, k, v, cu_seqlens, causal, num_warmup=50, num_iters=50):
     """Benchmark TK varlen attention."""
     for _ in range(num_warmup):
         tk.mha_forward(q, k, v, cu_seqlens, causal)
@@ -186,7 +186,7 @@ if __name__ == "__main__":
           f"num_seqs={args.num_seqs}, causal={causal}")
     print("=" * 80)
 
-    uniform_lengths = [384, 768, 1536, 3072, 6144]
+    uniform_lengths = [384, 768, 1536, 3072, 6144, 12288]
     all_results = []
 
     if args.mode in ("uniform", "both"):
@@ -207,7 +207,7 @@ if __name__ == "__main__":
         print("\n[Variable lengths] Random sequence lengths (multiples of 384)")
         np.random.seed(42)
         possible_lens = [384 * i for i in range(1, 17)]
-        for trial in range(3):
+        for trial in range(5):
             seqlens = [int(x) for x in np.random.choice(possible_lens, size=args.num_seqs)]
             total = sum(seqlens)
             desc = f"lens={seqlens[:4]}..."

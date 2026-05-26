@@ -59,7 +59,7 @@ class pytorch_attention(torch.nn.Module):
         y = torch.matmul(QK, v)
         return y
 
-def attention_test(dt, b, qo_head, kv_head, n, dv, causal, is_forwards, method_str, num_iters=10, verbose=True, torch_compile=False, **kwargs):
+def attention_test(dt, b, qo_head, kv_head, n, dv, causal, is_forwards, method_str, num_iters=50, verbose=True, torch_compile=False, **kwargs):
     
     pytorch_method = pytorch_attention()
     if torch_compile and method_str == "pytorch":

@@ -1,0 +1,186 @@
+Successfully imported flash_attn (FA2 varlen)
+Successfully imported flash_attn_interface (FA3)
+Config: qo_head=32, kv_head=8, d=128, num_seqs=16, causal=True
+================================================================================
+
+[Uniform lengths] All sequences have the same length
+
+  seq_len=384, num_seqs=16, total_tokens=6144
+    TK  :    0.133 ms |   145.3 TFLOPS
+    FA2 :    0.138 ms |   139.7 TFLOPS
+    FA3 :    0.093 ms |   208.9 TFLOPS
+
+  seq_len=768, num_seqs=16, total_tokens=12288
+    TK  :    0.341 ms |   226.8 TFLOPS
+    FA2 :    0.336 ms |   230.2 TFLOPS
+    FA3 :    0.214 ms |   361.5 TFLOPS
+
+  seq_len=1536, num_seqs=16, total_tokens=24576
+    TK  :    0.879 ms |   351.9 TFLOPS
+    FA2 :    0.985 ms |   313.8 TFLOPS
+    FA3 :    0.597 ms |   518.4 TFLOPS
+
+  seq_len=3072, num_seqs=16, total_tokens=49152
+    TK  :    2.694 ms |   459.1 TFLOPS
+    FA2 :    3.571 ms |   346.4 TFLOPS
+    FA3 :    2.215 ms |   558.3 TFLOPS
+
+  seq_len=6144, num_seqs=16, total_tokens=98304
+    TK  :    9.175 ms |   539.3 TFLOPS
+    FA2 :   13.994 ms |   353.6 TFLOPS
+    FA3 :    8.283 ms |   597.3 TFLOPS
+
+  seq_len=12288, num_seqs=16, total_tokens=196608
+    TK  :   34.672 ms |   570.8 TFLOPS
+    FA2 :   55.396 ms |   357.3 TFLOPS
+    FA3 :   31.906 ms |   620.3 TFLOPS
+
+[Variable lengths] Random sequence lengths (multiples of 384)
+
+  Trial 1: lens=[2688, 1536, 4992, 5760]... (total=52992)
+    TK  :    3.467 ms |   479.4 TFLOPS
+    FA2 :    4.953 ms |   335.6 TFLOPS
+    FA3 :    2.852 ms |   582.8 TFLOPS
+
+  Trial 2: lens=[1536, 3072, 3072, 1152]... (total=43008)
+    TK  :    2.590 ms |   507.3 TFLOPS
+    FA2 :    3.864 ms |   340.1 TFLOPS
+    FA3 :    2.216 ms |   593.0 TFLOPS
+
+  Trial 3: lens=[4608, 3840, 2304, 4992]... (total=69504)
+    TK  :    5.518 ms |   496.3 TFLOPS
+    FA2 :    7.969 ms |   343.6 TFLOPS
+    FA3 :    4.750 ms |   576.5 TFLOPS
+
+  Trial 4: lens=[5376, 5376, 5760, 5376]... (total=53760)
+    TK  :    3.683 ms |   513.6 TFLOPS
+    FA2 :    5.560 ms |   340.2 TFLOPS
+    FA3 :    3.458 ms |   547.0 TFLOPS
+
+  Trial 5: lens=[2688, 768, 1536, 3456]... (total=49536)
+    TK  :    3.193 ms |   504.3 TFLOPS
+    FA2 :    4.773 ms |   337.4 TFLOPS
+    FA3 :    2.477 ms |   650.2 TFLOPS
+
+================================================================================
+
+Time (ms):
+    seq_len  total_tokens  TK_ms FA2_ms FA3_ms
+        384          6144  0.133  0.138  0.093
+        768         12288  0.341  0.336  0.214
+       1536         24576  0.879  0.985  0.597
+       3072         49152  2.694  3.571  2.215
+       6144         98304  9.175 13.994  8.283
+      12288        196608 34.672 55.396 31.906
+var_trial_1         52992  3.467  4.953  2.852
+var_trial_2         43008  2.590  3.864  2.216
+var_trial_3         69504  5.518  7.969  4.750
+var_trial_4         53760  3.683  5.560  3.458
+var_trial_5         49536  3.193  4.773  2.477
+
+TFLOPS:
+    seq_len  total_tokens TK_tflops FA2_tflops FA3_tflops
+        384          6144     145.3      139.7      208.9
+        768         12288     226.8      230.2      361.5
+       1536         24576     351.9      313.8      518.4
+       3072         49152     459.1      346.4      558.3
+       6144         98304     539.3      353.6      597.3
+      12288        196608     570.8      357.3      620.3
+var_trial_1         52992     479.4      335.6      582.8
+var_trial_2         43008     507.3      340.1      593.0
+var_trial_3         69504     496.3      343.6      576.5
+var_trial_4         53760     513.6      340.2      547.0
+var_trial_5         49536     504.3      337.4      650.2
+Successfully imported flash_attn (FA2 varlen)
+Successfully imported flash_attn_interface (FA3)
+Config: qo_head=32, kv_head=8, d=128, num_seqs=16, causal=False
+================================================================================
+
+[Uniform lengths] All sequences have the same length
+
+  seq_len=384, num_seqs=16, total_tokens=6144
+    TK  :    0.127 ms |   304.0 TFLOPS
+    FA2 :    0.131 ms |   295.3 TFLOPS
+    FA3 :    0.136 ms |   283.6 TFLOPS
+
+  seq_len=768, num_seqs=16, total_tokens=12288
+    TK  :    0.322 ms |   479.6 TFLOPS
+    FA2 :    0.436 ms |   355.0 TFLOPS
+    FA3 :    0.338 ms |   458.0 TFLOPS
+
+  seq_len=1536, num_seqs=16, total_tokens=24576
+    TK  :    1.131 ms |   546.9 TFLOPS
+    FA2 :    1.615 ms |   383.0 TFLOPS
+    FA3 :    1.029 ms |   601.2 TFLOPS
+
+  seq_len=3072, num_seqs=16, total_tokens=49152
+    TK  :    4.152 ms |   595.8 TFLOPS
+    FA2 :    6.707 ms |   368.9 TFLOPS
+    FA3 :    4.367 ms |   566.5 TFLOPS
+
+  seq_len=6144, num_seqs=16, total_tokens=98304
+    TK  :   15.972 ms |   619.5 TFLOPS
+    FA2 :   26.405 ms |   374.8 TFLOPS
+    FA3 :   17.145 ms |   577.2 TFLOPS
+
+  seq_len=12288, num_seqs=16, total_tokens=196608
+    TK  :   64.263 ms |   615.9 TFLOPS
+    FA2 :  106.220 ms |   372.6 TFLOPS
+    FA3 :   64.717 ms |   611.6 TFLOPS
+
+[Variable lengths] Random sequence lengths (multiples of 384)
+
+  Trial 1: lens=[2688, 1536, 4992, 5760]... (total=52992)
+    TK  :    5.102 ms |   651.6 TFLOPS
+    FA2 :    9.214 ms |   360.8 TFLOPS
+    FA3 :    5.865 ms |   566.8 TFLOPS
+
+  Trial 2: lens=[1536, 3072, 3072, 1152]... (total=43008)
+    TK  :    3.816 ms |   688.8 TFLOPS
+    FA2 :    7.162 ms |   367.0 TFLOPS
+    FA3 :    4.611 ms |   570.0 TFLOPS
+
+  Trial 3: lens=[4608, 3840, 2304, 4992]... (total=69504)
+    TK  :    8.849 ms |   619.0 TFLOPS
+    FA2 :   14.741 ms |   371.5 TFLOPS
+    FA3 :    9.651 ms |   567.5 TFLOPS
+
+  Trial 4: lens=[5376, 5376, 5760, 5376]... (total=53760)
+    TK  :    6.157 ms |   614.4 TFLOPS
+    FA2 :   10.240 ms |   369.5 TFLOPS
+    FA3 :    6.794 ms |   556.9 TFLOPS
+
+  Trial 5: lens=[2688, 768, 1536, 3456]... (total=49536)
+    TK  :    4.798 ms |   671.2 TFLOPS
+    FA2 :    8.776 ms |   367.0 TFLOPS
+    FA3 :    5.710 ms |   564.0 TFLOPS
+
+================================================================================
+
+Time (ms):
+    seq_len  total_tokens  TK_ms  FA2_ms FA3_ms
+        384          6144  0.127   0.131  0.136
+        768         12288  0.322   0.436  0.338
+       1536         24576  1.131   1.615  1.029
+       3072         49152  4.152   6.707  4.367
+       6144         98304 15.972  26.405 17.145
+      12288        196608 64.263 106.220 64.717
+var_trial_1         52992  5.102   9.214  5.865
+var_trial_2         43008  3.816   7.162  4.611
+var_trial_3         69504  8.849  14.741  9.651
+var_trial_4         53760  6.157  10.240  6.794
+var_trial_5         49536  4.798   8.776  5.710
+
+TFLOPS:
+    seq_len  total_tokens TK_tflops FA2_tflops FA3_tflops
+        384          6144     304.0      295.3      283.6
+        768         12288     479.6      355.0      458.0
+       1536         24576     546.9      383.0      601.2
+       3072         49152     595.8      368.9      566.5
+       6144         98304     619.5      374.8      577.2
+      12288        196608     615.9      372.6      611.6
+var_trial_1         52992     651.6      360.8      566.8
+var_trial_2         43008     688.8      367.0      570.0
+var_trial_3         69504     619.0      371.5      567.5
+var_trial_4         53760     614.4      369.5      556.9
+var_trial_5         49536     671.2      367.0      564.0
