@@ -8,7 +8,11 @@
 #include "../include/kittens.cuh"
 
 #include "common/common.cuh"
-#include "lcf/lcf.cuh"
+#ifdef LC3F
+    #include "lc3f/lcf.cuh"
+#else
+    #include "lcf/lcf.cuh"
+#endif
 #include "lcsc/lcsc.cuh"
 #include "lcsf/lcsf.cuh"
 #include "interpreter/interpreter.cuh"
