@@ -24,6 +24,9 @@ template<typename T> concept kittens_layout = requires {
 template<typename T> concept store_kittens_layout = kittens_layout<T> && requires {
     typename T::output_block;
 };
+template<typename T> concept decoupled_kv_layout = kittens_layout<T> && requires {
+    typename T::input_block_v;
+};
 
 // Now we need to be able to put together a complete pc layout from a (possibly partially specialized) pc layout.
 namespace detail {
@@ -76,6 +79,8 @@ BLOCK_GETTER(output_block)
 BLOCK_GETTER(scratch_block)
 // Get the finish block type from a layout
 BLOCK_GETTER(finish_block)
+// Get the input_block_v type from a layout (decoupled K/V mode)
+BLOCK_GETTER(input_block_v)
 // Get the common state type from a layout
 BLOCK_GETTER(common_state)
 // Get the producer state type from a layout
@@ -94,6 +99,7 @@ template<kittens_layout T> struct complete_kittens_layout : T {
     using output_block_t   = typename detail::output_block_t<T>;
     using scratch_block_t  = typename detail::scratch_block_t<T>;
     using finish_block_t   = typename detail::finish_block_t<T>;
+    using input_block_v_t  = typename detail::input_block_v_t<T>;
     // In registers
     using common_state_t   = typename detail::common_state_t<T>;
     using producer_state_t = typename detail::producer_state_t<T>;
@@ -104,6 +110,7 @@ template<kittens_layout T> struct complete_kittens_layout : T {
     using input_alloc_block_t = padder<input_block_t, FORCE_ALIGN>;
     using output_alloc_block_t = padder<output_block_t, FORCE_ALIGN>;
     using scratch_alloc_block_t = padder<scratch_block_t, FORCE_ALIGN>;
+    using input_alloc_block_v_t = padder<input_block_v_t, FORCE_ALIGN>;
 };
 
 }

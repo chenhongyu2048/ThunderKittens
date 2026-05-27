@@ -12,7 +12,8 @@ template<int D, int NUM_WORKERS> struct attn_fwd_layout {
     using qo_global = kittens::gl<bf16, -1, -1, -1, D, qo_tile>;
     using kv_global = kittens::gl<bf16, -1, -1, -1, D, kv_tile>;
     struct globals { qo_global O, Q; kv_global K, V; };
-    struct input_block    { kv_tile k, v; };
+    struct input_block    { kv_tile k; };
+    struct input_block_v  { kv_tile v; };
     struct scratch_block  { qo_tile q[NUM_WORKERS]; };
     struct common_state   { int batch, q_head, kv_head, seq, kv_iters; };
     struct consumer_state {
@@ -24,7 +25,7 @@ template<int D, int NUM_WORKERS> struct attn_fwd_layout {
     };
 };
 template<int D, bool is_causal = false> struct attn_fwd_template {
-    static constexpr int NUM_CONSUMER_WARPS = 12, NUM_WORKERS = NUM_CONSUMER_WARPS/4, INPUT_PIPE_STAGES = 2;
+    static constexpr int NUM_CONSUMER_WARPS = 8, NUM_WORKERS = NUM_CONSUMER_WARPS/4, INPUT_PIPE_STAGES = 2;
     using layout = attn_fwd_layout<D, NUM_WORKERS>;
     __device__ static inline void common_setup(common_setup_args<layout> args) {
         int task_id = gridDim.x*args.task_iter + blockIdx.x;
@@ -70,10 +71,10 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
         }
         __device__ static inline void load(producer_load_args<layout> args) {
             if(warpgroup::warpid() == 0) {
-                warp::tma::expect(args.inputs_arrived_k, args.input.k);
-                warp::tma::load_async(args.input.k, args.globals.K, {args.common.batch, args.common.kv_head, args.iter, 0}, args.inputs_arrived_k);
-                warp::tma::expect(args.inputs_arrived_v, args.input.v);
-                warp::tma::load_async(args.input.v, args.globals.V, {args.common.batch, args.common.kv_head, args.iter, 0}, args.inputs_arrived_v);
+                warp::tma::expect(args.inputs_arrived_k, args.input_k.k);
+                warp::tma::load_async(args.input_k.k, args.globals.K, {args.common.batch, args.common.kv_head, args.iter, 0}, args.inputs_arrived_k);
+                warp::tma::expect(args.inputs_arrived_v, args.input_v.v);
+                warp::tma::load_async(args.input_v.v, args.globals.V, {args.common.batch, args.common.kv_head, args.iter, 0}, args.inputs_arrived_v);
             }
             else if(laneid() == 0) {
                 arrive(args.inputs_arrived_k);
@@ -92,13 +93,16 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
             args.state.max_vec = base_types::constants<float>::neg_infty();
             warpgroup::sync(warpgroup::groupid());
         }
-        __device__ static inline void compute(consumer_compute_args<layout> args, uint32_t& semaphore_bitfield, int& input_ring) {
-            wait(args.inputs_arrived_k, get_phasebit<0>(semaphore_bitfield, input_ring)); // wait for memory to arrive, phase changes at half the rate of the ring
+        __device__ static inline void compute(consumer_compute_args<layout> args, uint32_t& semaphore_bitfield_k, uint32_t& semaphore_bitfield_v, int& k_ring, int& v_ring) {
+            wait(args.inputs_arrived_k, get_phasebit<0>(semaphore_bitfield_k, k_ring)); // wait for memory to arrive, phase changes at half the rate of the ring
             constexpr float TEMPERATURE_SCALE = (D == 128) ? 0.08838834764f*1.44269504089f : 0.125f*1.44269504089f;
             // A = Q @ K.T
-            warpgroup::mm<transpose::N, transpose::T>(args.state.att_block, args.scratch.q[warpgroup::groupid()], args.input.k);
+            warpgroup::mm<transpose::N, transpose::T>(args.state.att_block, args.scratch.q[warpgroup::groupid()], args.input_k.k);
             args.state.max_vec_last_scaled = args.state.max_vec * TEMPERATURE_SCALE;
             warpgroup::mma_async_wait();
+            // K buffer is no longer needed — release it so producer can load next K
+            update_phasebit<0>(semaphore_bitfield_k, k_ring);
+            if(laneid() == 0) arrive(args.inputs_finished_k);
             // causal mask
             if constexpr (is_causal) {
                 constexpr int SUBTILE = kittens::TILE_ROW_DIM<bf16>;
@@ -133,11 +137,11 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
             args.state.o_reg *= args.state.max_vec_last_scaled; // normalize o_reg before mma
             args.state.att_block_mma = args.state.att_block; // convert to bf16 for mma
             // O += A @ V
-            wait(args.inputs_arrived_v, get_phasebit<0>(semaphore_bitfield, input_ring)); // wait for memory to arrive, phase changes at half the rate of the ring
-            update_phasebit<0>(semaphore_bitfield, input_ring);
-            warpgroup::mma<transpose::N, transpose::N>(args.state.o_reg, args.state.att_block_mma, args.input.v);
+            wait(args.inputs_arrived_v, get_phasebit<0>(semaphore_bitfield_v, v_ring)); // wait for memory to arrive, phase changes at half the rate of the ring
+            update_phasebit<0>(semaphore_bitfield_v, v_ring);
+            warpgroup::mma<transpose::N, transpose::N>(args.state.o_reg, args.state.att_block_mma, args.input_v.v);
             warpgroup::mma_async_wait();
-            if(laneid() == 0) arrive(args.inputs_finished); // done!
+            if(laneid() == 0) arrive(args.inputs_finished_v); // done!
         }
         __device__ static inline void finish(consumer_finish_args<layout> args) {
             if((args.common.seq*NUM_WORKERS+warpgroup::groupid())*layout::qo_tile::rows < args.globals.Q.rows()) { // out of bounds?

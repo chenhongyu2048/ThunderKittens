@@ -60,22 +60,25 @@ template<kittens_layout T> struct producer_setup_args : uniform_args<T> {
     ) : uniform_args<T>(_args), state(_state) {}
 };
 
-// Producer load args
+// Producer load args — decoupled K/V
 template<kittens_layout T> struct producer_load_args : uniform_args<T> {
     using CKL = complete_kittens_layout<T>;
     typename CKL::producer_state_t & state;
-    typename CKL::input_block_t & input;
+    typename CKL::input_block_t   & input_k;
+    typename CKL::input_block_v_t & input_v;
     kittens::semaphore & inputs_arrived_k;
     kittens::semaphore & inputs_arrived_v;
     int iter;
     __device__ producer_load_args(
         typename CKL::producer_state_t& _state,
-        typename CKL::input_block_t& _input,
+        typename CKL::input_block_t& _input_k,
+        typename CKL::input_block_v_t& _input_v,
         semaphore& _inputs_arrived_k,
         semaphore& _inputs_arrived_v,
         int _iter,
         uniform_args<T> &_args
-    ) : uniform_args<T>(_args), input(_input), state(_state), inputs_arrived_k(_inputs_arrived_k), inputs_arrived_v(_inputs_arrived_v), iter(_iter) {}
+    ) : uniform_args<T>(_args), state(_state), input_k(_input_k), input_v(_input_v),
+        inputs_arrived_k(_inputs_arrived_k), inputs_arrived_v(_inputs_arrived_v), iter(_iter) {}
 };
 
 // Consumer init args
@@ -88,24 +91,30 @@ template<kittens_layout T> struct consumer_setup_args : uniform_args<T> {
     ) : uniform_args<T>(_args), state(_state) {}
 };
 
-// Consumer compute args
+// Consumer compute args — decoupled K/V with separate finished barriers
 template<kittens_layout T> struct consumer_compute_args : uniform_args<T> {
     using CKL = complete_kittens_layout<T>;
     typename CKL::consumer_state_t & state;
-    typename CKL::input_block_t & input;
+    typename CKL::input_block_t   & input_k;
+    typename CKL::input_block_v_t & input_v;
     kittens::semaphore & inputs_arrived_k;
     kittens::semaphore & inputs_arrived_v;
-    kittens::semaphore & inputs_finished;
+    kittens::semaphore & inputs_finished_k;
+    kittens::semaphore & inputs_finished_v;
     int iter;
     __device__ consumer_compute_args(
         typename CKL::consumer_state_t& _state,
-        typename CKL::input_block_t& _input,
+        typename CKL::input_block_t& _input_k,
+        typename CKL::input_block_v_t& _input_v,
         semaphore& _inputs_arrived_k,
         semaphore& _inputs_arrived_v,
-        semaphore& _inputs_finished,
+        semaphore& _inputs_finished_k,
+        semaphore& _inputs_finished_v,
         int _iter,
         uniform_args<T> &_args
-    ) : uniform_args<T>(_args), input(_input), state(_state), inputs_arrived_k(_inputs_arrived_k), inputs_arrived_v(_inputs_arrived_v), inputs_finished(_inputs_finished), iter(_iter) {}
+    ) : uniform_args<T>(_args), state(_state), input_k(_input_k), input_v(_input_v),
+        inputs_arrived_k(_inputs_arrived_k), inputs_arrived_v(_inputs_arrived_v),
+        inputs_finished_k(_inputs_finished_k), inputs_finished_v(_inputs_finished_v), iter(_iter) {}
 };
 
 // Consumer finish args
