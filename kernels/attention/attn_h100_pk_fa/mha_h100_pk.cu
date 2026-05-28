@@ -25,6 +25,7 @@ template<int D, int NUM_WORKERS> struct attn_fwd_layout {
     };
 };
 template<int D, bool is_causal = false> struct attn_fwd_template {
+    static constexpr bool IS_CAUSAL = is_causal;
     static constexpr int NUM_CONSUMER_WARPS = 8, NUM_WORKERS = NUM_CONSUMER_WARPS/4, INPUT_PIPE_STAGES = 2;
     using layout = attn_fwd_layout<D, NUM_WORKERS>;
     __device__ static inline void common_setup(common_setup_args<layout> args) {
@@ -47,12 +48,9 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
                 const int q_start = args.common.seq * NUM_WORKERS * layout::qo_tile::rows;
                 const int q_end_exclusive = q_start + NUM_WORKERS * layout::qo_tile::rows;
                 int max_k_needed = q_end_exclusive - 1;
-                const int k_rows = args.globals.K.rows();
-
-                if (max_k_needed >= k_rows) {
-                    max_k_needed = k_rows - 1;
+                if (max_k_needed >= args.globals.K.rows()) {
+                    max_k_needed = args.globals.K.rows() - 1;
                 }
-
                 args.common.kv_iters = (max_k_needed + layout::kv_tile::rows) / layout::kv_tile::rows;
             }
             else {
@@ -83,6 +81,21 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
         }
     };
     struct consumer {
+        static constexpr int PINGPONG_THREADS = NUM_WORKERS * kittens::WARPGROUP_THREADS; // 256
+        static constexpr int PINGPONG_BAR_BASE = 10; // 10 and 11 for sync and arrive consumer warpgroups
+        __device__ static inline void warp_scheduler_barrier_sync() {
+            const int my_bar = PINGPONG_BAR_BASE + warpgroup::groupid(); // 0->10, 1->11
+            asm volatile("bar.sync %0, %1;\n" :: "r"(my_bar), "n"(PINGPONG_THREADS));
+        }
+        __device__ static inline void warp_scheduler_barrier_arrive() {
+            const int other_bar = PINGPONG_BAR_BASE + (1 - warpgroup::groupid()); // 0->11, 1->10
+            asm volatile("bar.arrive %0, %1;\n" :: "r"(other_bar), "n"(PINGPONG_THREADS));
+        }
+        __device__ static inline void warp_scheduler_barrier_init() {
+            if (warpgroup::groupid() == 1) {
+                asm volatile("bar.arrive %0, %1;\n" :: "r"(PINGPONG_BAR_BASE + 0), "n"(PINGPONG_THREADS));
+            }
+        }
         __device__ static inline void setup(consumer_setup_args<layout> args) {
             // warpgroup::consumer_registers<NUM_WORKERS>();
             if((args.common.seq*NUM_WORKERS + warpgroup::groupid())*layout::qo_tile::rows < args.globals.Q.rows()) // out of bounds?
@@ -95,8 +108,13 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
         }
         __device__ static inline void compute_prologue(consumer_prologue_args<layout> args, uint32_t& semaphore_bitfield_k, int& k_ring) {
             constexpr float TEMPERATURE_SCALE = (D == 128) ? 0.08838834764f*1.44269504089f : 0.125f*1.44269504089f;
-            wait(args.inputs_arrived_k, get_phasebit<0>(semaphore_bitfield_k, k_ring));
+            warp_scheduler_barrier_sync();
+            // Wait for K tile to be ready for only consumer WG0
+            if (warpgroup::groupid() == 0)
+                wait(args.inputs_arrived_k, get_phasebit<0>(semaphore_bitfield_k, k_ring));
+            // Issue S = Q × K_0 (async, don't wait)
             warpgroup::mm<transpose::N, transpose::T>(args.state.att_block, args.scratch.q[warpgroup::groupid()], args.input_k.k);
+            warp_scheduler_barrier_arrive();
             warpgroup::mma_async_wait();
             // K buffer is no longer needed — release it so producer can load next K
             update_phasebit<0>(semaphore_bitfield_k, k_ring);
@@ -132,20 +150,27 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
             args.state.o_reg *= args.state.max_vec_last_scaled; // normalize o_reg before mma
             args.state.att_block_mma = args.state.att_block; // convert to bf16 for mma
         }
-        __device__ static inline void compute_mainloop(consumer_mainloop_args<layout> args, uint32_t& semaphore_bitfield_k, uint32_t& semaphore_bitfield_v, int& k_ring, int& v_ring) {
+        __device__ static inline void compute_mainloop_masked(consumer_mainloop_args<layout> args, uint32_t& semaphore_bitfield_k, uint32_t& semaphore_bitfield_v, int& k_ring, int& v_ring) {
             constexpr float TEMPERATURE_SCALE = (D == 128) ? 0.08838834764f*1.44269504089f : 0.125f*1.44269504089f;
+            // 0. Wait for K tile to be ready for only consumer WG0
+            if (warpgroup::groupid() == 0)
+                wait(args.inputs_arrived_k, get_phasebit<0>(semaphore_bitfield_k, k_ring));
             // 1. Issue S_next = Q × K_j (async, don't wait)
-            wait(args.inputs_arrived_k, get_phasebit<0>(semaphore_bitfield_k, k_ring));
+            warp_scheduler_barrier_sync();
             warpgroup::mm<transpose::N, transpose::T>(args.state.att_block, args.scratch.q[warpgroup::groupid()], args.input_k.k);
             // 2. Issue O += P_cur × V_{j-1} (async, don't wait)
-            wait(args.inputs_arrived_v, get_phasebit<0>(semaphore_bitfield_v, v_ring));
+            // 2.1. Wait for K tile to be ready for only consumer WG0
+            if (warpgroup::groupid() == 0)
+                wait(args.inputs_arrived_v, get_phasebit<0>(semaphore_bitfield_v, v_ring));
             warpgroup::mma<transpose::N, transpose::N>(args.state.o_reg, args.state.att_block_mma, args.input_v.v);
+            warp_scheduler_barrier_arrive();
             // 3. Wait for QK to complete (PV still in flight)
             warpgroup::mma_async_wait<1>();
             update_phasebit<0>(semaphore_bitfield_k, k_ring);
             if(laneid() == 0) arrive(args.inputs_finished_k); // arrive on each consumer warp
             // 4. Softmax on S_next — overlaps with PV matmul!
-            if constexpr (is_causal) {
+            // causal mask
+            {
                 constexpr int SUBTILE = kittens::TILE_ROW_DIM<bf16>;
                 const int q_tile_idx = args.common.seq * NUM_WORKERS + warpgroup::groupid();
                 const int q_warp_start = q_tile_idx * layout::qo_tile::rows + warpgroup::warpid() * SUBTILE;
@@ -159,10 +184,47 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
                         auto &attn_subtile = reinterpret_cast<rt_fl<16, 16>&>(args.state.att_block.tiles[0][j]);
                         if (k_blk > q_blk) warp::neg_infty(attn_subtile);
                         else if (k_blk == q_blk) warp::make_causal(attn_subtile, attn_subtile, kittens::base_types::constants<float>::neg_infty());
-                        __syncwarp();
+                        __syncwarp(); // not needed but remove it causes register spilling
                     }
                 }
             }
+            // softmax
+            warp::right_fill(args.state.att_block, args.state.att_block, args.globals.K.rows() - args.iter*layout::kv_tile::rows, base_types::constants<float>::neg_infty());
+            args.state.max_vec_last_scaled = args.state.max_vec * TEMPERATURE_SCALE;
+            args.state.max_vec = warp::max<axis::COL>(args.state.att_block, args.state.max_vec);
+            args.state.max_vec_scaled = args.state.max_vec * TEMPERATURE_SCALE;
+            args.state.att_block = warp::exp2((args.state.att_block*TEMPERATURE_SCALE) - args.state.max_vec_scaled);
+            args.state.max_vec_last_scaled = warp::exp2(args.state.max_vec_last_scaled - args.state.max_vec_scaled);
+            args.state.norm_vec *= args.state.max_vec_last_scaled;
+            args.state.norm_vec = warp::sum<axis::COL>(args.state.att_block, args.state.norm_vec);
+            // 5. Wait for PV to complete
+            warpgroup::mma_async_wait();
+            update_phasebit<0>(semaphore_bitfield_v, v_ring);
+            if(laneid() == 0) arrive(args.inputs_finished_v);
+            // rescale O
+            args.state.o_reg *= args.state.max_vec_last_scaled;
+            // P_cur = P_next
+            args.state.att_block_mma = args.state.att_block;
+        }
+        __device__ static inline void compute_mainloop_unmasked(consumer_mainloop_args<layout> args, uint32_t& semaphore_bitfield_k, uint32_t& semaphore_bitfield_v, int& k_ring, int& v_ring) {
+            constexpr float TEMPERATURE_SCALE = (D == 128) ? 0.08838834764f*1.44269504089f : 0.125f*1.44269504089f;
+            // 0. Wait for K tile to be ready for only consumer WG0
+            if (warpgroup::groupid() == 0)
+                wait(args.inputs_arrived_k, get_phasebit<0>(semaphore_bitfield_k, k_ring));
+            // 1. Issue S_next = Q × K_j (async, don't wait)
+            warp_scheduler_barrier_sync();
+            warpgroup::mm<transpose::N, transpose::T>(args.state.att_block, args.scratch.q[warpgroup::groupid()], args.input_k.k);
+            // 2. Issue O += P_cur × V_{j-1} (async, don't wait)
+            // 2.1. Wait for K tile to be ready for only consumer WG0
+            if (warpgroup::groupid() == 0)
+                wait(args.inputs_arrived_v, get_phasebit<0>(semaphore_bitfield_v, v_ring));
+            warpgroup::mma<transpose::N, transpose::N>(args.state.o_reg, args.state.att_block_mma, args.input_v.v);
+            warp_scheduler_barrier_arrive();
+            // 3. Wait for QK to complete (PV still in flight)
+            warpgroup::mma_async_wait<1>();
+            update_phasebit<0>(semaphore_bitfield_k, k_ring);
+            if(laneid() == 0) arrive(args.inputs_finished_k); // arrive on each consumer warp
+            // 4. Softmax on S_next — overlaps with PV matmul!
             // softmax
             warp::right_fill(args.state.att_block, args.state.att_block, args.globals.K.rows() - args.iter*layout::kv_tile::rows, base_types::constants<float>::neg_infty());
             args.state.max_vec_last_scaled = args.state.max_vec * TEMPERATURE_SCALE;
@@ -182,8 +244,11 @@ template<int D, bool is_causal = false> struct attn_fwd_template {
         }
         __device__ static inline void compute_epilogue(consumer_epilogue_args<layout> args, uint32_t& semaphore_bitfield_v, int& v_ring) {
             // O += P_last × V_{T-1}
-            wait(args.inputs_arrived_v, get_phasebit<0>(semaphore_bitfield_v, v_ring));
+            if (warpgroup::groupid() == 0)
+                wait(args.inputs_arrived_v, get_phasebit<0>(semaphore_bitfield_v, v_ring));
+            warp_scheduler_barrier_sync();
             warpgroup::mma<transpose::N, transpose::N>(args.state.o_reg, args.state.att_block_mma, args.input_v.v);
+            warp_scheduler_barrier_arrive();
             warpgroup::mma_async_wait();
             update_phasebit<0>(semaphore_bitfield_v, v_ring);
             if(laneid() == 0) arrive(args.inputs_finished_v);

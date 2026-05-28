@@ -17,7 +17,8 @@ template<typename lcft> concept kernel_template = requires {
     lcft::producer::load;
     lcft::consumer::setup;
     lcft::consumer::compute_prologue;
-    lcft::consumer::compute_mainloop;
+    lcft::consumer::compute_mainloop_masked;
+    lcft::consumer::compute_mainloop_unmasked;
     lcft::consumer::compute_epilogue;
     lcft::consumer::finish;
 } && kittens_layout<typename lcft::layout>;
@@ -151,7 +152,7 @@ void kernel(const __grid_constant__ typename lcft::layout::globals globals) {
                 wait(inputs_finished_v[v_ring], get_phasebit<1>(semaphore_bitfield_v, v_ring));
                 update_phasebit<1>(semaphore_bitfield_v, v_ring);
                 lcft::producer::load({p_state, *k_smem[k_ring], *v_smem[v_ring],
-                                      inputs_arrived_k[k_ring], inputs_arrived_v[v_ring], load_iter, unif});
+                                      inputs_arrived_k[k_ring], inputs_arrived_v[v_ring], num_iters - 1 - load_iter, unif}); // load in reverse order
                 k_ring = ring_advance<INPUT_PIPE_STAGES>(k_ring);
                 v_ring = ring_advance<INPUT_PIPE_STAGES>(v_ring);
             }
@@ -162,7 +163,7 @@ void kernel(const __grid_constant__ typename lcft::layout::globals globals) {
                 wait(inputs_finished_v[v_ring], get_phasebit<1>(semaphore_bitfield_v, v_ring));
                 update_phasebit<1>(semaphore_bitfield_v, v_ring);
                 lcft::producer::load({p_state, *k_smem[k_ring], *v_smem[v_ring],
-                                      inputs_arrived_k[k_ring], inputs_arrived_v[v_ring], load_iter, unif});
+                                      inputs_arrived_k[k_ring], inputs_arrived_v[v_ring], num_iters - 1 - load_iter, unif});
                 k_ring = ring_advance<INPUT_PIPE_STAGES>(k_ring);
                 v_ring = ring_advance<INPUT_PIPE_STAGES>(v_ring);
             }
@@ -175,6 +176,7 @@ void kernel(const __grid_constant__ typename lcft::layout::globals globals) {
         // all warps must arrive here, confirming semaphore initialization is visible to all threads.
         if constexpr (detail::CLUSTER_BLOCKS_v<lcft> > 1) everyone::tma::cluster::sync();
         else everyone::sync(15);
+        lcft::consumer::warp_scheduler_barrier_init();
         consumer_state c_state;
         for(int task_iter = 0; true; task_iter++) {
             int num_iters = -1;
@@ -185,34 +187,64 @@ void kernel(const __grid_constant__ typename lcft::layout::globals globals) {
 #endif
             lcft::common_setup(unif);
             if(num_iters < 0) break; // no work to do
+            // calculate num of mask/unmask blocks
+            int n_unmasked;
+            if constexpr (lcft::IS_CAUSAL) {
+                const int q_min_start = common.seq * (NUM_CONSUMER_WARPS / 4) * L::qo_tile::rows;
+                n_unmasked = q_min_start / L::kv_tile::rows;
+                if (n_unmasked > num_iters - 1)
+                    n_unmasked = num_iters - 1; // minus 1 for first prologue iteration
+            } else {
+                n_unmasked = num_iters - 1; // minus 1 for first prologue iteration
+            }
+            const int n_masked_main = (num_iters - 1) - n_unmasked;
+            // setup consumer state
             int k_ring = 0, v_ring = 0;
             lcft::consumer::setup({c_state, unif});
-            // Prologue: iter 0, only K
-            lcft::consumer::compute_prologue({c_state, *k_smem[k_ring],
-                                              inputs_arrived_k[k_ring], inputs_finished_k[k_ring],
-                                              0, unif},
-                                             semaphore_bitfield_k, k_ring);
-            k_ring = ring_advance<INPUT_PIPE_STAGES>(k_ring);
-            // Main loop: iter 1..T-1, K[j] and V[j-1]
-            for(int j = 1; j < num_iters; j++) {
-                lcft::consumer::compute_mainloop({c_state, *k_smem[k_ring], *v_smem[v_ring],
-                                                  inputs_arrived_k[k_ring], inputs_arrived_v[v_ring],
-                                                  inputs_finished_k[k_ring], inputs_finished_v[v_ring],
-                                                  j, unif},
-                                                 semaphore_bitfield_k, semaphore_bitfield_v,
-                                                 k_ring, v_ring);
+            // Prologue: iter num_iters-1, only K
+            {
+                lcft::consumer::compute_prologue({c_state, *k_smem[k_ring],
+                                                inputs_arrived_k[k_ring], inputs_finished_k[k_ring],
+                                                num_iters - 1, unif},
+                                                semaphore_bitfield_k, k_ring);
+                k_ring = ring_advance<INPUT_PIPE_STAGES>(k_ring);
+            }
+            // ---- Mainloop (masked) ----
+            int j = 1; // record how many iterations we've done
+            #pragma unroll 1
+            for (int m = 0; m < n_masked_main; m++, j++) {
+                lcft::consumer::compute_mainloop_masked({c_state, *k_smem[k_ring], *v_smem[v_ring],
+                                                         inputs_arrived_k[k_ring], inputs_arrived_v[v_ring],
+                                                         inputs_finished_k[k_ring], inputs_finished_v[v_ring],
+                                                         num_iters - 1 - j, unif},
+                                                        semaphore_bitfield_k, semaphore_bitfield_v,
+                                                        k_ring, v_ring);
+                k_ring = ring_advance<INPUT_PIPE_STAGES>(k_ring);
+                v_ring = ring_advance<INPUT_PIPE_STAGES>(v_ring);
+            }
+            // ---- Mainloop (no mask) ----
+            #pragma unroll 1
+            for (int m = 0; m < n_unmasked; m++, j++) {
+                lcft::consumer::compute_mainloop_unmasked({c_state, *k_smem[k_ring], *v_smem[v_ring],
+                                                         inputs_arrived_k[k_ring], inputs_arrived_v[v_ring],
+                                                         inputs_finished_k[k_ring], inputs_finished_v[v_ring],
+                                                         num_iters - 1 - j, unif},
+                                                        semaphore_bitfield_k, semaphore_bitfield_v,
+                                                        k_ring, v_ring);
                 k_ring = ring_advance<INPUT_PIPE_STAGES>(k_ring);
                 v_ring = ring_advance<INPUT_PIPE_STAGES>(v_ring);
             }
             // Epilogue: last V
-            lcft::consumer::compute_epilogue({c_state, *v_smem[v_ring],
-                                              inputs_arrived_v[v_ring], inputs_finished_v[v_ring],
-                                              unif},
-                                             semaphore_bitfield_v, v_ring);
-            v_ring = ring_advance<INPUT_PIPE_STAGES>(v_ring);
-            consumers::sync(14); // cannot overwrite finish block until all consumer warps are done.
+            {
+                lcft::consumer::compute_epilogue({c_state, *v_smem[v_ring],
+                                                inputs_arrived_v[v_ring], inputs_finished_v[v_ring],
+                                                unif},
+                                                semaphore_bitfield_v, v_ring);
+                v_ring = ring_advance<INPUT_PIPE_STAGES>(v_ring);
+            }
+            // consumers::sync(14); // not needed
             lcft::consumer::finish({c_state, *finish_smem, finish_finished, unif});
-            consumers::sync(14); // cannot overwrite finish block until all consumer warps are done.
+            // consumers::sync(14); // not needed
         } // task iter loop
     } // consumer warpgroup
     // all warps must arrive here, confirming semaphore initialization is visible to all threads.
