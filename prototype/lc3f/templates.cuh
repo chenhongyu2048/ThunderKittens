@@ -131,6 +131,68 @@ template<kittens_layout T> struct consumer_finish_args : uniform_args<T> {
     ) : uniform_args<T>(_args), finish(_finish), state(_state), finish_finished(_finish_finished) {}
 };
 
+// Consumer prologue args — only K[0]
+template<kittens_layout T> struct consumer_prologue_args : uniform_args<T> {
+    using CKL = complete_kittens_layout<T>;
+    typename CKL::consumer_state_t & state;
+    typename CKL::input_block_t   & input_k;
+    kittens::semaphore & inputs_arrived_k;
+    kittens::semaphore & inputs_finished_k;
+    int iter;
+    __device__ consumer_prologue_args(
+        typename CKL::consumer_state_t& _state,
+        typename CKL::input_block_t& _input_k,
+        semaphore& _inputs_arrived_k,
+        semaphore& _inputs_finished_k,
+        int _iter,
+        uniform_args<T> &_args
+    ) : uniform_args<T>(_args), state(_state), input_k(_input_k),
+        inputs_arrived_k(_inputs_arrived_k), inputs_finished_k(_inputs_finished_k), iter(_iter) {}
+};
+
+// Consumer mainloop args — K[j] and V[j-1]
+template<kittens_layout T> struct consumer_mainloop_args : uniform_args<T> {
+    using CKL = complete_kittens_layout<T>;
+    typename CKL::consumer_state_t & state;
+    typename CKL::input_block_t   & input_k;
+    typename CKL::input_block_v_t & input_v;
+    kittens::semaphore & inputs_arrived_k;
+    kittens::semaphore & inputs_arrived_v;
+    kittens::semaphore & inputs_finished_k;
+    kittens::semaphore & inputs_finished_v;
+    int iter;
+    __device__ consumer_mainloop_args(
+        typename CKL::consumer_state_t& _state,
+        typename CKL::input_block_t& _input_k,
+        typename CKL::input_block_v_t& _input_v,
+        semaphore& _inputs_arrived_k,
+        semaphore& _inputs_arrived_v,
+        semaphore& _inputs_finished_k,
+        semaphore& _inputs_finished_v,
+        int _iter,
+        uniform_args<T> &_args
+    ) : uniform_args<T>(_args), state(_state), input_k(_input_k), input_v(_input_v),
+        inputs_arrived_k(_inputs_arrived_k), inputs_arrived_v(_inputs_arrived_v),
+        inputs_finished_k(_inputs_finished_k), inputs_finished_v(_inputs_finished_v), iter(_iter) {}
+};
+
+// Consumer epilogue args — only V[T-1]
+template<kittens_layout T> struct consumer_epilogue_args : uniform_args<T> {
+    using CKL = complete_kittens_layout<T>;
+    typename CKL::consumer_state_t & state;
+    typename CKL::input_block_v_t & input_v;
+    kittens::semaphore & inputs_arrived_v;
+    kittens::semaphore & inputs_finished_v;
+    __device__ consumer_epilogue_args(
+        typename CKL::consumer_state_t& _state,
+        typename CKL::input_block_v_t& _input_v,
+        semaphore& _inputs_arrived_v,
+        semaphore& _inputs_finished_v,
+        uniform_args<T> &_args
+    ) : uniform_args<T>(_args), state(_state), input_v(_input_v),
+        inputs_arrived_v(_inputs_arrived_v), inputs_finished_v(_inputs_finished_v) {}
+};
+
 } // namespace lcf
 } // namespace prototype
 } // namespace kittens

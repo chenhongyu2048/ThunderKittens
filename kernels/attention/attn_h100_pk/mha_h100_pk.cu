@@ -24,7 +24,7 @@ template<int D, int NUM_WORKERS> struct attn_fwd_layout {
     };
 };
 template<int D, bool is_causal = false> struct attn_fwd_template {
-    static constexpr int NUM_CONSUMER_WARPS = 12, NUM_WORKERS = NUM_CONSUMER_WARPS/4, INPUT_PIPE_STAGES = 2;
+    static constexpr int NUM_CONSUMER_WARPS = 8, NUM_WORKERS = NUM_CONSUMER_WARPS/4, INPUT_PIPE_STAGES = 2;
     using layout = attn_fwd_layout<D, NUM_WORKERS>;
     __device__ static inline void common_setup(common_setup_args<layout> args) {
         int task_id = gridDim.x*args.task_iter + blockIdx.x;
